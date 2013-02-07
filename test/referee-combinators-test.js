@@ -10,26 +10,60 @@
 
     buster.testCase('partial', {
 	'assert': {
-	    'expected and actual': function() {
-		var actual = combinators.assert.equals(42)
-		refute.exception(function() {
-		    actual(42);
-		});
-		assert.exception(function() {
-		    actual(100);
-		});
+	    'expected and actual': {
+		"pass":function() {
+		    var actual = combinators.assert.equals(42)
+		    refute.exception(function() {
+			actual(42);
+		    });
+		},
+		"fail": function() {
+		    assert.exception(function() {
+			actual(100);
+		    });
+		}
 	    },
-
-	    'only actual': function() {
-		var actual = combinators.assert.isTrue();
-		refute.exception(function() {
-		    actual(true);
-		});
-		assert.exception(function() {
-		    actual(false);
-		});
+	    'only actual': {
+		'pass': function() {
+		    var actual = combinators.assert.isTrue();
+		    refute.exception(function() {
+			actual(true);
+		    });
+		},
+		'fail': function() {
+		    assert.exception(function() {
+			actual(false);
+		    });
+		}
 	    }
-	    
+	},
+	'refute': {
+	    'expected and actual': {
+		"pass":function() {
+		    var actual = combinators.refute.equals(42)
+		    refute.exception(function() {
+			actual(100);
+		    });
+		},
+		"fail": function() {
+		    assert.exception(function() {
+			actual(42);
+		    });
+		}
+	    },
+	    'only actual': {
+		'pass': function() {
+		    var actual = combinators.refute.isTrue();
+		    refute.exception(function() {
+			actual(false);
+		    });
+		},
+		'fail': function() {
+		    assert.exception(function() {
+			actual(true);
+		    });
+		}
+	    }
 	}
     })
 
