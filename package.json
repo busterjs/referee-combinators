@@ -1,0 +1,26 @@
+{
+  "name": "referee-combinators",
+  "version": "0.0.0",
+  "description": "Combinators goes assertion",
+  "main": "lib/referee-combinators.js",
+  "scripts": {
+    "test": "buster test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/busterjs/referee-combinators.git"
+  },
+  "keywords": [
+    "assert",
+    "refute",
+    "combinator",
+    "referee"
+  ],
+  "author": "Joakim Ohlrogge",
+  "license": "BSD",
+  "gitHead": "7d119b5f91f35a0743193f5f2021be2c2aeb8e39",
+  "dependencies": {
+    "referee": "~0.11.0",
+    "lodash": "~1.0.0-rc.3"
+  }
+}
