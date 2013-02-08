@@ -24,7 +24,7 @@
     "lodash": "~1.0.0-rc.3"
   },
   "devDependencies": {
-    "buster": "0.6.11",
+    "buster": "0.6.12",
     "autolint": "latest"
   }
 }
