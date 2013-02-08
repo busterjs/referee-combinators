@@ -20,7 +20,7 @@
   "license": "BSD",
   "gitHead": "7d119b5f91f35a0743193f5f2021be2c2aeb8e39",
   "dependencies": {
-    "referee": "~0.11.0",
+    "referee": "~0.11.1",
     "lodash": "~1.0.0-rc.3"
   },
   "devDependencies": {

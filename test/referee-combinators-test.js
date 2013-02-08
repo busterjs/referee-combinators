@@ -9,6 +9,15 @@
     var refute = buster.refute;
 
 
+
+    referee.add("customIsTwo", {
+        assert: function (actual) {
+            return actual === 2;
+        },
+        assertMessage: "${0} was expected to be 2",
+        refuteMessage: "${0} was not  expected to be 2"
+    });
+
     buster.testCase('partial', {
         'assert': {
             'expected and actual': {
@@ -29,6 +38,16 @@
                 'fail': function () {
                     var actual = combinators.assert.isTrue();
                     assert.exception(function () { actual(false); }, "AssertionError");
+                }
+            },
+            'custom': {
+                'pass': function () {
+                    var actual = combinators.assert.customIsTwo();
+                    refute.exception(function () { actual(2); }, "AssertionError");
+                },
+                'fail': function () {
+                    var actual = combinators.refute.customIsTwo();
+                    assert.exception(function () { actual(2); }, "AssertionError");
                 }
             }
         },
