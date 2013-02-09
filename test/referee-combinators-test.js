@@ -1,7 +1,8 @@
 /*jslint maxlen:100 */
-(function (referee, buster) {
+(function (referee, buster, _) {
     if (typeof require === "function" && typeof module === "object") {
         referee = require("../lib/referee-combinators");
+        _ = require("lodash");
         buster = require("buster");
     }
     var combinators = referee.combinators;
@@ -18,61 +19,35 @@
         refuteMessage: "${0} was not  expected to be 2"
     });
 
+    function testPartial(type, assertion, correct, incorrect) {
+        var args = _.drop(_.toArray(arguments), 4);
+        function test(check, actual) {
+            return function () {
+                var term = combinators[type][assertion].apply(null, args);
+                buster[check].exception(function () { term(actual); }, "AssertionError");
+            };
+        }
+        return {
+            "pass": test('refute', correct),
+            "fail": test('assert', incorrect),
+            "chain": function () {
+                var term = combinators[type][assertion].apply(null, args);
+                assert.equals(term(correct), correct);
+            }
+        };
+    }
+
     buster.testCase('partial', {
         'assert': {
-            'expected and actual': {
-                "pass": function () {
-                    var actual = combinators.assert.equals(42);
-                    refute.exception(function () { actual(42); }, "AssertionError");
-                },
-                "fail": function () {
-                    var actual = combinators.assert.equals(42);
-                    assert.exception(function () { actual(100); }, "AssertionError");
-                }
-            },
-            'only actual': {
-                'pass': function () {
-                    var actual = combinators.assert.isTrue();
-                    refute.exception(function () { actual(true); });
-                },
-                'fail': function () {
-                    var actual = combinators.assert.isTrue();
-                    assert.exception(function () { actual(false); }, "AssertionError");
-                }
-            },
-            'custom': {
-                'pass': function () {
-                    var actual = combinators.assert.customIsTwo();
-                    refute.exception(function () { actual(2); }, "AssertionError");
-                },
-                'fail': function () {
-                    var actual = combinators.refute.customIsTwo();
-                    assert.exception(function () { actual(2); }, "AssertionError");
-                }
-            }
+            'expected and actual': testPartial('assert', 'equals', 42, 100, 42),
+            'only actual': testPartial('assert', 'isTrue', true, false),
+            'custom': testPartial('assert', 'customIsTwo', 2, 8)
         },
         'refute': {
-            'expected and actual': {
-                "pass": function () {
-                    var actual = combinators.refute.equals(42);
-                    refute.exception(function () { actual(100); });
-                },
-                "fail": function () {
-                    var actual = combinators.refute.equals(42);
-                    assert.exception(function () { actual(42); }, "AssertionError");
-                }
-            },
-            'only actual': {
-                'pass': function () {
-                    var actual = combinators.refute.isTrue();
-                    refute.exception(function () { actual(false); });
-                },
-                'fail': function () {
-                    var actual = combinators.refute.isTrue();
-                    assert.exception(function () { actual(true); }, "AssertionError");
-                }
-            }
+            'expected and actual': testPartial('refute', 'equals', 100, 42, 42),
+            'only actual': testPartial('refute', 'isTrue', false, true),
+            'custom': testPartial('refute', 'customIsTwo', 8, 2)
         }
     });
 
-}(this.referee, this.buster));
+}(this.referee, this.buster, this._));
