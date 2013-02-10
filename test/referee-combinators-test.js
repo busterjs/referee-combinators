@@ -9,12 +9,12 @@
     var assert = buster.assert;
     var refute = buster.refute;
 
-    referee.add("customIsTwo", {
+    referee.add("customEqualsTwo", {
         assert: function (actual) {
-            return actual === 2;
+            return actual == 2;
         },
-        assertMessage: "${0} was expected to be 2",
-        refuteMessage: "${0} was not  expected to be 2"
+        assertMessage: "${0} was expected to equal 2",
+        refuteMessage: "${0} was not expected to equal 2"
     });
 
     function testPartial(type, assertion, correct, incorrect) {
@@ -49,12 +49,14 @@
         'assert': {
             'expected and actual': testPartial('assert', 'equals', 42, 100, 42),
             'only actual': testPartial('assert', 'isTrue', true, false),
-            'custom': testPartial('assert', 'customIsTwo', 2, 8)
+            'custom1': testPartial('assert', 'customEqualsTwo', 2, 8),
+            'custom2': testPartial('assert', 'customEqualsTwo', "2", 8)
         },
         'refute': {
             'expected and actual': testPartial('refute', 'equals', 100, 42, 42),
             'only actual': testPartial('refute', 'isTrue', false, true),
-            'custom': testPartial('refute', 'customIsTwo', 8, 2)
+            'custom1': testPartial('refute', 'customEqualsTwo', 8, 2),
+            'custom2': testPartial('refute', 'customEqualsTwo', 8, "2")
         }
     });
 
