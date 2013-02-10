@@ -61,9 +61,15 @@
 
     buster.testCase("check", {
         "built-ins": function () {
-            assert.equals(42, "42", "normal equals should do coercion");
             refute.isTrue(1, "normal refute.isTrue(1) should pass");
             refute.isTrue(0, "normal refute.isTrue(0) should pass");
+        },
+        "to be sure": function () {
+            var e = 42;
+            var a = "42";
+            var assertEquals = combinators.assert.equals(e);
+            assert.equals(e, a, "normal equals should do coercion");
+            assertEquals(a, "derived equals should also do coercion");
         }
     });
 
