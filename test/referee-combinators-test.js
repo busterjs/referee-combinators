@@ -17,11 +17,10 @@
         refuteMessage: "${0} was not expected to equal 2"
     });
 
-    function testPartial(type, assertion, correct, incorrect) {
+    function testPartial(type, assertion, argsOf1stApp, correct, incorrect) {
         var tests = {};
-        var args = _.drop(_.toArray(arguments), 4);
-        var desc = type + "." + assertion + "(" + args.join(", ") + ")("; 
-        var term = combinators[type][assertion].apply(null, args);
+        var desc = type + "." + assertion + "(" + argsOf1stApp.join(", ") + ")("; 
+        var term = combinators[type][assertion].apply(null, argsOf1stApp);
         function passesWith(actual) {
             tests[desc + correct + ") should pass"] = function () {
                 buster.refute.exception(function () { term(actual); });
@@ -47,16 +46,16 @@
 
     buster.testCase('partial', {
         'assert': {
-            'expected and actual': testPartial('assert', 'equals', 42, 100, 42),
-            'only actual': testPartial('assert', 'isTrue', true, false),
-            'custom1': testPartial('assert', 'customEqualsTwo', 2, 8),
-            'custom2': testPartial('assert', 'customEqualsTwo', "2", 8)
+            'expected and actual': testPartial('assert', 'equals', [42], 42, 100),
+            'only actual': testPartial('assert', 'isTrue', [], true, false),
+            'custom1': testPartial('assert', 'customEqualsTwo', [], 2, 8),
+            'custom2': testPartial('assert', 'customEqualsTwo', [], "2", 8)
         },
         'refute': {
-            'expected and actual': testPartial('refute', 'equals', 100, 42, 42),
-            'only actual': testPartial('refute', 'isTrue', false, true),
-            'custom1': testPartial('refute', 'customEqualsTwo', 8, 2),
-            'custom2': testPartial('refute', 'customEqualsTwo', 8, "2")
+            'expected and actual': testPartial('refute', 'equals', [42], 100, 42),
+            'only actual': testPartial('refute', 'isTrue', [], false, true),
+            'custom1': testPartial('refute', 'customEqualsTwo', [], 8, 2),
+            'custom2': testPartial('refute', 'customEqualsTwo', [], 8, "2")
         }
     });
 
