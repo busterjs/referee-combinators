@@ -9,7 +9,7 @@
     var assert = buster.assert;
     var refute = buster.refute;
 
-    referee.add("customEqualsTwo", {
+    referee.add("equalsTwo", {
         assert: function (actual) {
             return actual == 2;
         },
@@ -18,22 +18,32 @@
     });
 
     function testPartial(type, assertion, argsOf1stApp, correct, incorrect) {
+        var prefix = "//combinators."; // prepend "//" to see which tests are created
         var tests = {};
-        var desc = type + "." + assertion + "(" + argsOf1stApp.join(", ") + ")("; 
         var term = combinators[type][assertion].apply(null, argsOf1stApp);
+        var desc = type + "." + assertion + "(" + argsOf1stApp.join(", ") + ")";
+        function testName(actual, shouldWhat) {
+            var name = prefix + desc + "(" + buster.format.ascii(actual) + ") should " + shouldWhat;
+            if (tests[name]) { throw new Error("duplicate test name [" + name + "]"); }
+            return name;
+        }
         function passesWith(actual) {
-            tests[desc + correct + ") should pass"] = function () {
+            var name = testName(actual, "pass");
+            tests[name] = function () {
                 buster.refute.exception(function () { term(actual); });
             };
+            return name;
         }
         function failsWith(actual) {
-            tests[desc + incorrect + ") should fail"] = function () {
+            var name = testName(actual, "fail");
+            tests[name] = function () {
                 buster.assert.exception(function () { term(actual); }, "AssertionError");
             };
         }
         passesWith(correct);
         failsWith(incorrect);
-        tests[desc + correct + ") should return actual value"] = function () {
+        var name = testName(correct, "return actual value");
+        tests[name] = function () {
             assert.equals(term(correct), correct);
         };
         /*
@@ -41,22 +51,100 @@
             assert.equals(term(incorrect), incorrect);
         };
         */
+
         return tests;
     }
 
+    function makeTests(assertion, argsOf1stApp, callback) {
+        var prefix = ""; // prepend "//" to see which tests are created
+        var tests = {};
+        var terms = {
+            assert: combinators.assert[assertion].apply(null, argsOf1stApp),
+            refute: combinators.refute[assertion].apply(null, argsOf1stApp)
+        };
+        var desc = "." + assertion + "(" + argsOf1stApp.join(", ") + ")";
+        function testName(type, actual, shouldWhat) {
+            return prefix + type + desc
+                + "(" + buster.format.ascii(actual) + ") should " + shouldWhat;
+        }
+        function addTest(type, actual, shouldWhat, testFn) {
+            var name = testName(type, actual, shouldWhat);
+            if (tests[name]) {
+                throw new Error("duplicate test name [" + name + "]");
+            }
+            tests[name] = testFn;
+        }
+        function makePass(type) {
+            var term = terms[type];
+            return function (actual) {
+                addTest(type, actual, "pass", function () {
+                    buster.refute.exception(function () { term(actual); });
+                });
+                addTest(type, actual, "return actual value", function () {
+                    assert.equals(term(actual), actual);
+                });
+            };
+        }
+        function makeFail(type) {
+            var term = terms[type];
+            return function (actual) {
+                addTest(type, actual, "fail", function () {
+                    buster.assert.exception(function () { term(actual); }, "AssertionError");
+                });
+            };
+        }
+        var t;
+        t = "assert"; callback(makePass(t), makeFail(t));
+        t = "refute"; callback(makeFail(t), makePass(t));
+
+        return tests;
+    }
+
+    buster.testCase("check", {
+        "built-ins": function () {
+            assert.equals(42, "42", "normal equals should do coercion");
+            refute.isTrue(1, "normal refute.isTrue(1) should pass");
+            refute.isTrue(0, "normal refute.isTrue(0) should pass");
+        }
+    });
+
+    buster.testCase("'partial' assertion from", {
+        'built-in unary:': makeTests('isTrue', [], function (pass, fail) {
+            pass(true);
+            fail(false);
+            fail("false");
+            fail("true");
+            fail(0);
+            fail(1);
+        }),
+        'built-in binary:': makeTests('equals', [42], function (pass, fail) {
+            pass(42);
+            fail(100);
+        }),
+        'custom unary:' : makeTests('equalsTwo', [], function (pass, fail) {
+            pass(2);
+            pass("2");
+            fail(8);
+        })
+
+    });
+
+
     buster.testCase('partial', {
+
         'assert': {
             'expected and actual': testPartial('assert', 'equals', [42], 42, 100),
             'only actual': testPartial('assert', 'isTrue', [], true, false),
-            'custom1': testPartial('assert', 'customEqualsTwo', [], 2, 8),
-            'custom2': testPartial('assert', 'customEqualsTwo', [], "2", 8)
+            'custom1': testPartial('assert', 'equalsTwo', [], 2, 8),
+            'custom2': testPartial('assert', 'equalsTwo', [], "2", 8)
         },
         'refute': {
             'expected and actual': testPartial('refute', 'equals', [42], 100, 42),
             'only actual': testPartial('refute', 'isTrue', [], false, true),
-            'custom1': testPartial('refute', 'customEqualsTwo', [], 8, 2),
-            'custom2': testPartial('refute', 'customEqualsTwo', [], 8, "2")
+            'custom1': testPartial('refute', 'equalsTwo', [], 8, 2),
+            'custom2': testPartial('refute', 'equalsTwo', [], 8, "2")
         }
+
     });
 
 }(this.referee, this.buster, this._));
