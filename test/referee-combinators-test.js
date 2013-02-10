@@ -9,8 +9,6 @@
     var assert = buster.assert;
     var refute = buster.refute;
 
-
-
     referee.add("customIsTwo", {
         assert: function (actual) {
             return actual === 2;
@@ -20,21 +18,31 @@
     });
 
     function testPartial(type, assertion, correct, incorrect) {
+        var tests = {};
         var args = _.drop(_.toArray(arguments), 4);
-        function test(check, actual) {
-            return function () {
-                var term = combinators[type][assertion].apply(null, args);
-                buster[check].exception(function () { term(actual); }, "AssertionError");
+        var desc = type + "." + assertion + "(" + args.join(", ") + ")("; 
+        var term = combinators[type][assertion].apply(null, args);
+        function passesWith(actual) {
+            tests[desc + correct + ") should pass"] = function () {
+                buster.refute.exception(function () { term(actual); });
             };
         }
-        return {
-            "pass": test('refute', correct),
-            "fail": test('assert', incorrect),
-            "chain": function () {
-                var term = combinators[type][assertion].apply(null, args);
-                assert.equals(term(correct), correct);
-            }
+        function failsWith(actual) {
+            tests[desc + incorrect + ") should fail"] = function () {
+                buster.assert.exception(function () { term(actual); }, "AssertionError");
+            };
+        }
+        passesWith(correct);
+        failsWith(incorrect);
+        tests[desc + correct + ") should return actual value"] = function () {
+            assert.equals(term(correct), correct);
         };
+        /*
+        tests[desc + incorrect + ") should return actual value"] = function () {
+            assert.equals(term(incorrect), incorrect);
+        };
+        */
+        return tests;
     }
 
     buster.testCase('partial', {
