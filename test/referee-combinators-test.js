@@ -78,6 +78,7 @@
         }),
         'built-in binary:': makeTests('equals', [42], function (pass, fail) {
             pass(42);
+            pass("42"); // TODO: this one's currently failing (behaving not like built-in)
             fail(100);
         }),
         'custom unary:' : makeTests('equalsTwo', [], function (pass, fail) {
