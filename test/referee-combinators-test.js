@@ -87,7 +87,7 @@
             pass("42"); // TODO: this one's currently failing (behaving not like built-in)
             fail(100);
         }),
-        'custom unary:' : makeTests('equalsTwo', [], function (pass, fail) {
+        'custom binary:' : makeTests('equalsTwo', [], function (pass, fail) {
             pass(2);
             pass("2");
             fail(8);
