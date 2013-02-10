@@ -11,7 +11,7 @@
 
     referee.add("equalsTwo", {
         assert: function (actual) {
-            return actual == 2;
+            return actual == 2; // jslint complains but I DO want == instead of ===
         },
         assertMessage: "${0} was expected to equal 2",
         refuteMessage: "${0} was not expected to equal 2"
@@ -50,11 +50,12 @@
                 addTest(type, actual, "fail", function () {
                     buster.assert.exception(function () { term(actual); }, "AssertionError");
                 });
+                // TODO: add tests for message, be it a custom one or the default
             };
         }
         var t;
-        t = "assert"; callback(makePass(t), makeFail(t));
-        t = "refute"; callback(makeFail(t), makePass(t));
+        t = "assert"; callback(makePass(t), makeFail(t)); // jslint complains but this format...
+        t = "refute"; callback(makeFail(t), makePass(t)); // ...is best to emphasize the diffs
 
         return tests;
     }
