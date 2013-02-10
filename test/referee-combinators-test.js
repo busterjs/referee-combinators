@@ -1,9 +1,10 @@
 /*jslint maxlen:100 */
-(function (referee, buster, _) {
+(function (referee, buster, _, testHelper) {
     if (typeof require === "function" && typeof module === "object") {
         referee = require("../lib/referee-combinators");
         _ = require("lodash");
         buster = require("buster");
+        testHelper = require("../node_modules/referee/test/test-helper");
     }
     var combinators = referee.combinators;
     var assert = buster.assert;
@@ -50,4 +51,16 @@
         }
     });
 
-}(this.referee, this.buster, this._));
+    buster.testCase("extended asserts", {
+        "attr": {
+            "pass for equal attribute": function () {
+                refute.exception(function () {
+                    combinators.assert.attr("name",
+                                            combinators.assert.equals("the name"))({name: 'the name'});
+                }, "AssertionError");
+            }
+        }
+    });
+
+
+}(this.referee, this.buster, this._, this.testHelper));
