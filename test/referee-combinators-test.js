@@ -17,44 +17,6 @@
         refuteMessage: "${0} was not expected to equal 2"
     });
 
-    function testPartial(type, assertion, argsOf1stApp, correct, incorrect) {
-        var prefix = "//combinators."; // prepend "//" to see which tests are created
-        var tests = {};
-        var term = combinators[type][assertion].apply(null, argsOf1stApp);
-        var desc = type + "." + assertion + "(" + argsOf1stApp.join(", ") + ")";
-        function testName(actual, shouldWhat) {
-            var name = prefix + desc + "(" + buster.format.ascii(actual) + ") should " + shouldWhat;
-            if (tests[name]) { throw new Error("duplicate test name [" + name + "]"); }
-            return name;
-        }
-        function passesWith(actual) {
-            var name = testName(actual, "pass");
-            tests[name] = function () {
-                buster.refute.exception(function () { term(actual); });
-            };
-            return name;
-        }
-        function failsWith(actual) {
-            var name = testName(actual, "fail");
-            tests[name] = function () {
-                buster.assert.exception(function () { term(actual); }, "AssertionError");
-            };
-        }
-        passesWith(correct);
-        failsWith(incorrect);
-        var name = testName(correct, "return actual value");
-        tests[name] = function () {
-            assert.equals(term(correct), correct);
-        };
-        /*
-        tests[desc + incorrect + ") should return actual value"] = function () {
-            assert.equals(term(incorrect), incorrect);
-        };
-        */
-
-        return tests;
-    }
-
     function makeTests(assertion, argsOf1stApp, callback) {
         var prefix = ""; // prepend "//" to see which tests are created
         var tests = {};
@@ -63,12 +25,9 @@
             refute: combinators.refute[assertion].apply(null, argsOf1stApp)
         };
         var desc = "." + assertion + "(" + argsOf1stApp.join(", ") + ")";
-        function testName(type, actual, shouldWhat) {
-            return prefix + type + desc
-                + "(" + buster.format.ascii(actual) + ") should " + shouldWhat;
-        }
         function addTest(type, actual, shouldWhat, testFn) {
-            var name = testName(type, actual, shouldWhat);
+            var name = prefix + type + desc
+                + "(" + buster.format.ascii(actual) + ") should " + shouldWhat;
             if (tests[name]) {
                 throw new Error("duplicate test name [" + name + "]");
             }
@@ -126,24 +85,6 @@
             pass("2");
             fail(8);
         })
-
-    });
-
-
-    buster.testCase('partial', {
-
-        'assert': {
-            'expected and actual': testPartial('assert', 'equals', [42], 42, 100),
-            'only actual': testPartial('assert', 'isTrue', [], true, false),
-            'custom1': testPartial('assert', 'equalsTwo', [], 2, 8),
-            'custom2': testPartial('assert', 'equalsTwo', [], "2", 8)
-        },
-        'refute': {
-            'expected and actual': testPartial('refute', 'equals', [42], 100, 42),
-            'only actual': testPartial('refute', 'isTrue', [], false, true),
-            'custom1': testPartial('refute', 'equalsTwo', [], 8, 2),
-            'custom2': testPartial('refute', 'equalsTwo', [], 8, "2")
-        }
 
     });
 
