@@ -18,14 +18,16 @@
     var refute = buster.refute;
     var makeTests = testHelper.makeTests;
 
-    referee.add("equalsTwoWithCoercion", {
-        assert: function (actual) {
-            /*jslint eqeq: true*/ // only in current scope
-            return actual == 2;  // we DO want coercion here
-        },
-        assertMessage: "${0} was expected to equal 2",
-        refuteMessage: "${0} was not expected to equal 2"
-    });
+    function addCustomAssertions() {
+        referee.add("equalsTwoWithCoercion", {
+            assert: function (actual) {
+                /*jslint eqeq: true*/ // only in current scope
+                return actual == 2;  // we DO want coercion here
+            },
+            assertMessage: "${0} was expected to equal 2",
+            refuteMessage: "${0} was not expected to equal 2"
+        });
+    }
 
     buster.testCase("check normal assertions", {
         "built-in": {
@@ -49,9 +51,15 @@
         }
     });
 
+    // need to add them here (outside test case),
+    // if it's done in setUp the custom assertion is not found - why?
+    //addCustomAssertions();
+
     buster.testCase("combinator ('partial') assertions", {
 
         'derived from custom': {
+            setUp: addCustomAssertions, // not working - why ?
+
             'binary': makeTests('equalsTwoWithCoercion', [], function (pass, fail) {
                 pass(2);
                 pass("2");
