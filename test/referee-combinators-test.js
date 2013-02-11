@@ -51,16 +51,38 @@
         }
     });
 
-    buster.testCase("extended asserts", {
-        "attr": {
-            "pass for equal attribute": function () {
-                refute.exception(function () {
-                    combinators.assert.attr("name",
-                                            combinators.assert.equals("the name"))({name: 'the name'});
-                }, "AssertionError");
+    function combinatorTest(assertion, createWithArgs) {
+        return createWithArgs(function (args, tests) {
+            function fails(actual) {
+                return function () {
+                    buster.assert.exception(function () {
+                        combinators.assert[assertion].apply(null, args)(actual);
+                    });
+                };
             }
-        }
-    });
+            function passes(actual) {
+                return function () {
+                    buster.refute.exception(function () {
+                        combinators.assert[assertion].apply(null, args)(actual);
+                    });
+                };
+            }
+            return tests(passes, fails);
+        });
+    }
 
+    buster.testCase('extended asserts',
+        combinatorTest('attr', function (expected) {
+            return expected(['name', combinators.assert.equals('the name')],
+                            function (passes, fails) {
+                    return {
+                        "pass for equal attribute" : passes({name: 'the name'}),
+                        "fail for unequal attribute" : fails({name: 'other'}),
+                        "fail for missing attribute" : fails({}),
+                        "pass for equal and other  attributes" : passes({name: 'the name',
+                                                                        other: 'ignored'})
+                    };
+                });
+        }));
 
 }(this.referee, this.buster, this._, this.testHelper));
