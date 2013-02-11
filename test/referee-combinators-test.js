@@ -3,7 +3,13 @@
     if (typeof require === "function" && typeof module === "object") {
         referee = require("../lib/referee-combinators");
         _ = require("lodash");
-        buster = require("buster");
+
+        // This is a temporary workaround for the development-environment:
+        buster = require("buster-node");
+        var B = require("buster");
+        buster.format = { ascii: B.format.ascii.bind(B) };
+        // remove the above and uncomment the following once workaround is obsolete:
+        //buster = require("buster");
     }
     var combinators = referee.combinators;
     var assert = buster.assert;
@@ -11,7 +17,8 @@
 
     referee.add("equalsTwo", {
         assert: function (actual) {
-            return actual == 2; // jslint complains but I DO want == instead of ===
+            /*jslint eqeq: true*/ // only in current scope
+            return actual == 2;  // we DO want coercion here
         },
         assertMessage: "${0} was expected to equal 2",
         refuteMessage: "${0} was not expected to equal 2"
@@ -53,10 +60,12 @@
                 // TODO: add tests for message, be it a custom one or the default
             };
         }
-        var t;
-        t = "assert"; callback(makePass(t), makeFail(t)); // jslint complains but this format...
-        t = "refute"; callback(makeFail(t), makePass(t)); // ...is best to emphasize the diffs
 
+        (function () {/*jslint white: true */
+            var t;
+            t = "assert"; callback(makePass(t), makeFail(t)); // jslint complains but this format...
+            t = "refute"; callback(makeFail(t), makePass(t)); // ...is best to emphasize the diffs
+        }());
         return tests;
     }
 
@@ -69,7 +78,11 @@
             var a = 42;
             var e = "42";
             var refuteEquals = combinators.refute.equals(e);
-            refute.equals(e, a, "normal equals should NOT do coercion"); // will fail with buster <= 0.6.12
+
+            // will fail with buster <= 0.6.12 (where `equals` does coercion):
+            refute.equals(e, a, "normal equals should NOT do coercion");
+
+            // based on `referee.equals` (no coercion) so this will pass:
             refuteEquals(a, "derived equals should also NOT do coercion");
         }
     });
