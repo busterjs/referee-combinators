@@ -18,7 +18,7 @@
     var refute = buster.refute;
     var makeTests = testHelper.makeTests;
 
-    referee.add("equalsTwo", {
+    referee.add("equalsTwoWithCoercion", {
         assert: function (actual) {
             /*jslint eqeq: true*/ // only in current scope
             return actual == 2;  // we DO want coercion here
@@ -27,44 +27,56 @@
         refuteMessage: "${0} was not expected to equal 2"
     });
 
-    buster.testCase("check", {
-        "built-ins": function () {
-            refute.isTrue(1, "normal refute.isTrue(1) should pass");
-            refute.isTrue(0, "normal refute.isTrue(0) should pass");
-        },
-        // defer for buster <= 0.6.12:
-        "//equals coercing or not?": function () {
-            var a = 42;
-            var e = "42";
-            var refuteEquals = combinators.refute.equals(e);
+    buster.testCase("check normal assertions", {
+        "built-in": {
+            "isTrue": function () {
+                assert.isTrue(true, "normal refute.isTrue(true) should pass");
+                refute.isTrue(false, "normal refute.isTrue(false) should pass");
+                refute.isTrue(1, "normal refute.isTrue(1) should pass");
+                refute.isTrue(0, "normal refute.isTrue(0) should pass");
+            },
+            "//equals coercing or not? (fails with buster <= 0.6.12)": function () {
+                var a = 42;
+                var e = "42";
+                var refuteEquals = combinators.refute.equals(e);
 
-            // will fail with buster <= 0.6.12 (where `equals` does coercion):
-            refute.equals(e, a, "normal equals should NOT do coercion");
+                // will fail with buster <= 0.6.12 (where `equals` does coercion):
+                refute.equals(e, a, "normal equals should NOT do coercion");
 
-            // based on `referee.equals` (no coercion) so this will pass:
-            refuteEquals(a, "derived equals should also NOT do coercion");
+                // based on `referee.equals` (no coercion) so this will pass:
+                refuteEquals(a, "derived equals should also NOT do coercion");
+            }
         }
     });
 
-    buster.testCase("'partial' assertion from", {
-        'built-in unary:': makeTests('isTrue', [], function (pass, fail) {
-            pass(true);
-            fail(false);
-            fail("false");
-            fail("true");
-            fail(0);
-            fail(1);
-        }),
-        'built-in binary:': makeTests('equals', [42], function (pass, fail) {
-            pass(42);
-            fail("42"); // ATTENTION: old equals from buster <= 0.6.12 did have coercion!
-            fail(100);
-        }),
-        'custom binary:' : makeTests('equalsTwo', [], function (pass, fail) {
-            pass(2);
-            pass("2");
-            fail(8);
-        })
+    buster.testCase("combinator ('partial') assertions", {
+
+        'derived from custom': {
+            'binary': makeTests('equalsTwoWithCoercion', [], function (pass, fail) {
+                pass(2);
+                pass("2");
+                fail(8);
+            })
+        },
+
+        'derived from built-in unary': {
+            'isTrue': makeTests('isTrue', [], function (pass, fail) {
+                pass(true);
+                fail(false);
+                fail("false");
+                fail("true");
+                fail(0);
+                fail(1);
+            })
+        },
+
+        'derived from built-in binary': {
+            'equals': makeTests('equals', [42], function (pass, fail) {
+                pass(42);
+                fail("42"); // ATTENTION: old equals from buster <= 0.6.12 DID have coercion!
+                fail(100);
+            })
+        }
 
     });
 
