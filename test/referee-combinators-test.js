@@ -71,18 +71,29 @@
         });
     }
 
+    var ca = combinators.assert;
+
     buster.testCase('extended asserts',
         combinatorTest('attr', function (expected) {
-            return expected(['name', combinators.assert.equals('the name')],
+            return {
+                "one attribute": expected(['name', ca.equals('the name')],
                             function (passes, fails) {
-                    return {
-                        "pass for equal attribute" : passes({name: 'the name'}),
-                        "fail for unequal attribute" : fails({name: 'other'}),
-                        "fail for missing attribute" : fails({}),
-                        "pass for equal and other  attributes" : passes({name: 'the name',
-                                                                        other: 'ignored'})
-                    };
-                });
+                                return {
+                                    "pass for equal attribute" : passes({name: 'the name'}),
+                                    "fail for unequal attribute" : fails({name: 'other'}),
+                                    "fail for missing attribute" : fails({}),
+                                    "pass for equal and other  attributes" : passes({name: 'the name',
+                                                                                     other: 'ignored'})
+                                };
+                            }),
+                "attribute under attribute": expected(['sub', ca.attr('name', ca.equals('subname'))],
+                            function (passes, fails) {
+                                return {
+                                    "pass for equal attribute" : passes({sub:{name:'subname'}}),
+                                    "fail for partial path" : fails({sub:{}})
+                                }
+                            })
+            }
         }));
 
 }(this.referee, this.buster, this._, this.testHelper));
