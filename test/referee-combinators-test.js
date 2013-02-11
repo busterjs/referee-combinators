@@ -65,12 +65,12 @@
             refute.isTrue(1, "normal refute.isTrue(1) should pass");
             refute.isTrue(0, "normal refute.isTrue(0) should pass");
         },
-        "to be sure": function () {
-            var e = 42;
-            var a = "42";
-            var assertEquals = combinators.assert.equals(e);
-            assert.equals(e, a, "normal equals should do coercion");
-            assertEquals(a, "derived equals should also do coercion");
+        "equals coercing or not?": function () {
+            var a = 42;
+            var e = "42";
+            var refuteEquals = combinators.refute.equals(e);
+            refute.equals(e, a, "normal equals should NOT do coercion"); // will fail with buster <= 0.6.12
+            refuteEquals(a, "derived equals should also NOT do coercion");
         }
     });
 
@@ -85,7 +85,7 @@
         }),
         'built-in binary:': makeTests('equals', [42], function (pass, fail) {
             pass(42);
-            pass("42"); // TODO: this one's currently failing (behaving not like built-in)
+            fail("42"); // ATTENTION: old equals from buster <= 0.6.12 did have coercion!
             fail(100);
         }),
         'custom binary:' : makeTests('equalsTwo', [], function (pass, fail) {
