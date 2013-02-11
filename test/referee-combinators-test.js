@@ -1,9 +1,10 @@
 /*jslint maxlen:100 */
-(function (referee, buster, _) {
+(function (referee, buster, _, testHelper) {
     if (typeof require === "function" && typeof module === "object") {
         referee = require("../lib/referee-combinators");
         _ = require("lodash");
         buster = require("buster");
+        testHelper = require("../node_modules/referee/test/test-helper");
     }
     var combinators = referee.combinators;
     var assert = buster.assert;
@@ -50,4 +51,38 @@
         }
     });
 
-}(this.referee, this.buster, this._));
+    function combinatorTest(assertion, createWithArgs) {
+        return createWithArgs(function (args, tests) {
+            function fails(actual) {
+                return function () {
+                    buster.assert.exception(function () {
+                        combinators.assert[assertion].apply(null, args)(actual);
+                    });
+                };
+            }
+            function passes(actual) {
+                return function () {
+                    buster.refute.exception(function () {
+                        combinators.assert[assertion].apply(null, args)(actual);
+                    });
+                };
+            }
+            return tests(passes, fails);
+        });
+    }
+
+    buster.testCase('extended asserts',
+        combinatorTest('attr', function (expected) {
+            return expected(['name', combinators.assert.equals('the name')],
+                            function (passes, fails) {
+                    return {
+                        "pass for equal attribute" : passes({name: 'the name'}),
+                        "fail for unequal attribute" : fails({name: 'other'}),
+                        "fail for missing attribute" : fails({}),
+                        "pass for equal and other  attributes" : passes({name: 'the name',
+                                                                        other: 'ignored'})
+                    };
+                });
+        }));
+
+}(this.referee, this.buster, this._, this.testHelper));
