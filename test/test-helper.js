@@ -1,7 +1,8 @@
 /*jslint maxlen:100 */
-var testHelper = (function (referee, buster) {
+var testHelper = (function (referee, buster, _) {
     if (typeof require === "function" && typeof module === "object") {
         referee = require("../lib/referee-combinators");
+        _ = require("lodash");
 
         //// This is a temporary workaround for the development-environment:
         //buster = require("buster-node");
@@ -16,16 +17,17 @@ var testHelper = (function (referee, buster) {
     var refute = buster.refute;
 
     function makeTests(assertion, argsOf1stApp, callback) {
+        var fmt = buster.format.ascii.bind(buster);
         var prefix = ""; // prepend "//" to see which tests are created
         var tests = {};
         var terms = {
             assert: combinators.assert[assertion].apply(null, argsOf1stApp),
             refute: combinators.refute[assertion].apply(null, argsOf1stApp)
         };
-        var desc = "." + assertion + "(" + argsOf1stApp.join(", ") + ")";
+        var desc = "." + assertion + "(" + _.map(argsOf1stApp, fmt).join(", ") + ")";
         function addTest(type, actual, shouldWhat, testFn) {
             var name = prefix + type + desc
-                + "(" + buster.format.ascii(actual) + ") should " + shouldWhat;
+                + "(" + fmt(actual) + ") should " + shouldWhat;
             if (tests[name]) {
                 throw new Error("duplicate test name [" + name + "]");
             }
@@ -64,7 +66,7 @@ var testHelper = (function (referee, buster) {
         makeTests: makeTests
     };
 
-}(this.referee, this.buster));
+}(this.referee, this.buster, this.lodash));
 
 if (typeof module === "object") {
     module.exports = testHelper;
