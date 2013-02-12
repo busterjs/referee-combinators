@@ -73,7 +73,7 @@
 
     var ca = combinators.assert;
 
-    buster.testCase('extended asserts',
+    buster.testCase('extension - attr',
         combinatorTest('attr', function (expected) {
             return {
                 "one attribute": expected(['name', ca.equals('the name')],
@@ -95,5 +95,32 @@
                             })
             }
         }));
+
+    /*
+     * Structure assert is merely a sugar for other assert combinators
+     */
+    buster.testCase('extension - structure',
+        combinatorTest('structure', function (expected) {
+            return {
+                "one attribute": expected([{name: 'the name'}],
+                            function (passes, fails) {
+                                return {
+                                    "pass for equal attribute" : passes({name: 'the name'}),
+                                    "fail for unequal attribute" : fails({name: 'other'}),
+                                    "fail for missing attribute" : fails({}),
+                                    "pass for equal and other  attributes" : passes({name: 'the name',
+                                                                                     other: 'ignored'})
+                                };
+                            }),
+                "attribute under attribute": expected([{sub: {name:'subname'}}],
+                            function (passes, fails) {
+                                return {
+                                    "pass for equal attribute" : passes({sub:{name:'subname'}}),
+                                    "fail for partial path" : fails({sub:{}})
+                                }
+                            })
+            }
+        }));
+
 
 }(this.referee, this.buster, this._, this.testHelper));
