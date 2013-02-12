@@ -16,8 +16,22 @@ var testHelper = (function (referee, buster, _) {
     var assert = buster.assert;
     var refute = buster.refute;
 
+    function fmt(x) {
+        // buster.format.ascii is not exactly what we need wrt functions
+        // So we'll have to roll our own here :(
+        //
+        // TODO: buster.format.ascii.functionName does not exist (it's buster.functionName)
+
+        if (typeof x === "function" && !(x instanceof RegExp)) {
+            var fName = buster.functionName(x);
+            if ((typeof fName === "string") && (fName !== "")) {
+                return fName;
+            }
+        }
+        return buster.format.ascii(x);
+    }
+
     function makeTests(assertion, argsOf1stApp, callback) {
-        var fmt = buster.format.ascii.bind(buster);
         var prefix = ""; // prepend "//" to see which tests are created
         var tests = {};
         var terms = {

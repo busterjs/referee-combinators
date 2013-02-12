@@ -37,6 +37,9 @@
                 refute.isTrue(1, "normal refute.isTrue(1) should pass");
                 refute.isTrue(0, "normal refute.isTrue(0) should pass");
             },
+            "//isTrue defines .displayName": function () {
+                assert.defined(assert.isTrue.displayName, ".displayName");
+            },
             "//equals coercing or not? (fails with buster <= 0.6.12)": function () {
                 var a = 42;
                 var e = "42";
@@ -90,6 +93,14 @@
         },
 
         'derived from built-in unary': {
+            'isTrue unapplied defines .displayName': function () {
+                assert.defined(combinators.assert.isTrue.displayName, "assert.isTrue.displayName");
+                assert.defined(combinators.refute.isTrue.displayName, "refute.isTrue.displayName");
+            },
+            'isTrue applied once defines .displayName': function () {
+                assert.defined(combinators.assert.isTrue().displayName, "assert.isTrue().displayName");
+                assert.defined(combinators.refute.isTrue().displayName, "refute.isTrue().displayName");
+            },
             'isTrue': makeTests('isTrue', [], function (pass, fail) {
                 pass(true);
                 fail(false);
@@ -116,7 +127,7 @@
         },
 
         'extended asserts': {
-            '//one attribute': makeTests('attr', ['name', ca.equals('the name')], function(pass, fail) {
+            '//one attribute': makeTests('attr', ['name', ca.equals('the name')], function (pass, fail) {
                 pass({name: 'the name'});   // "pass for equal attribute" : 
                 fail({name: 'other'});   // "fail for unequal attribute" : 
                 fail({});   // "fail for missing attribute" :
