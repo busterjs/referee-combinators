@@ -34,16 +34,28 @@ var testHelper = (function (referee, buster, _) {
     function makeTests(assertion, argsOf1stApp, callback) {
         var prefix = ""; // prepend "//" to see which tests are created
         var tests = {};
+        var rawTerms = {
+            assert: combinators.assert[assertion],
+            refute: combinators.refute[assertion]
+        };
         var terms = {
-            assert: combinators.assert[assertion].apply(null, argsOf1stApp),
-            refute: combinators.refute[assertion].apply(null, argsOf1stApp)
+            assert: rawTerms.assert.apply(null, argsOf1stApp),
+            refute: rawTerms.refute.apply(null, argsOf1stApp)
         };
         var desc = "." + assertion + "(" + _.map(argsOf1stApp, fmt).join(", ") + ")";
         function addTest(type, actual, shouldWhat, testFn) {
+            var gotActual = !!testFn;
+            if (!gotActual) {
+                testFn = shouldWhat;
+                shouldWhat = actual;
+            }
             var name = prefix + type + desc
-                + "(" + fmt(actual) + ") should " + shouldWhat;
+                + (gotActual ? "(" + fmt(actual) + ")" : "")
+                + " should " + shouldWhat;
             if (tests[name]) {
-                throw new Error("duplicate test name [" + name + "]");
+                throw new Error("duplicate test name [" + name + "]"
+                    + "\n  old test fn: " + tests[name]
+                    + "\n  new test fn: " + testFn);
             }
             tests[name] = testFn;
         }
@@ -68,11 +80,21 @@ var testHelper = (function (referee, buster, _) {
             };
         }
 
-        (function () {/*jslint white: true */
-            var t;
-            t = "assert"; callback(makePass(t), makeFail(t)); // jslint complains but this format...
-            t = "refute"; callback(makeFail(t), makePass(t)); // ...is best to emphasize the diffs
-        }());
+        var t;
+        t = "assert";
+        callback(makePass(t), makeFail(t));
+        addTest(t, "have .displayName", function () {
+            assert.match(terms[t].displayName, t + "." + assertion,
+                "name should be that of normal assertion");
+        });
+
+        t = "refute";
+        callback(makeFail(t), makePass(t)); // yes, swap pass and fail for refute
+        addTest(t, "have .displayName", function () {
+            assert.match(terms[t].displayName, t + "." + assertion,
+                "name should be that of normal assertion");
+        });
+
         return tests;
     }
 
