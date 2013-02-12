@@ -53,12 +53,12 @@
 
     // need to add them here (outside test case),
     // if it's done in setUp the custom assertion is not found - why?
-    //addCustomAssertions();
+    addCustomAssertions();
 
     buster.testCase("combinator ('partial') assertions", {
 
         'derived from custom': {
-            setUp: addCustomAssertions, // not working - why ?
+            //setUp: addCustomAssertions, // not working - why ?
 
             'binary': makeTests('equalsTwoWithCoercion', [], function (pass, fail) {
                 pass(2);
