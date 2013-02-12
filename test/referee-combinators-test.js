@@ -113,14 +113,22 @@
                 fail(0);
                 fail(-1);
             })
-        }
+        },
 
+        'extended asserts': {
+            '//one attribute': makeTests('attr', ['name', ca.equals('the name')], function(pass, fail) {
+                pass({name: 'the name'});   // "pass for equal attribute" : 
+                fail({name: 'other'});   // "fail for unequal attribute" : 
+                fail({});   // "fail for missing attribute" :
+                pass({name: 'the name', other: 'ignored'});     // "pass for equal and other  attributes" : 
+            })
+        }
     });
 
     buster.testCase('extended asserts',
         combinatorTest('attr', function (expected) {
             return {
-                "one attribute": expected(
+                "//one attribute": expected(
                     ['name', ca.equals('the name')],
                     function (passes, fails) {
                         return {
