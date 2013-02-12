@@ -115,7 +115,7 @@
                 "attribute under attribute": expected([{sub: {name:'subname'}}],
                             function (passes, fails) {
                                 return {
-                                    "pass for equal attribute" : passes({sub:{name:'subname'}}),
+                                    "pass for equal attribute" : passes({sub:{name:'subname', ignored:'should be'}}),
                                     "fail for partial path" : fails({sub:{}})
                                 }
                             })
