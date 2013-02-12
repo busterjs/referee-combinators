@@ -51,6 +51,28 @@
         }
     });
 
+    function combinatorTest(assertion, createWithArgs) {
+        return createWithArgs(function (args, tests) {
+            function fails(actual) {
+                return function () {
+                    buster.assert.exception(function () {
+                        combinators.assert[assertion].apply(null, args)(actual);
+                    });
+                };
+            }
+            function passes(actual) {
+                return function () {
+                    buster.refute.exception(function () {
+                        combinators.assert[assertion].apply(null, args)(actual);
+                    });
+                };
+            }
+            return tests(passes, fails);
+        });
+    }
+
+    var ca = combinators.assert;
+
     // need to add them here (outside test case),
     // if it's done in setUp the custom assertion is not found - why?
     addCustomAssertions();
@@ -83,32 +105,17 @@
                 pass(42);
                 fail("42"); // ATTENTION: old equals from buster <= 0.6.12 DID have coercion!
                 fail(100);
+            }),
+            'greater': makeTests('greater', [23], function (pass, fail) {
+                pass(4711);
+                pass(24);
+                fail(23);
+                fail(0);
+                fail(-1);
             })
         }
 
     });
-
-    function combinatorTest(assertion, createWithArgs) {
-        return createWithArgs(function (args, tests) {
-            function fails(actual) {
-                return function () {
-                    buster.assert.exception(function () {
-                        combinators.assert[assertion].apply(null, args)(actual);
-                    });
-                };
-            }
-            function passes(actual) {
-                return function () {
-                    buster.refute.exception(function () {
-                        combinators.assert[assertion].apply(null, args)(actual);
-                    });
-                };
-            }
-            return tests(passes, fails);
-        });
-    }
-
-    var ca = combinators.assert;
 
     buster.testCase('extended asserts',
         combinatorTest('attr', function (expected) {
