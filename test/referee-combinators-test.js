@@ -118,6 +118,15 @@
                                     "pass for equal attribute" : passes({sub:{name:'subname', ignored:'should be'}}),
                                     "fail for partial path" : fails({sub:{}})
                                 }
+                            }),
+                "explicit assert for attribute": expected([{enabled:ca.isTrue()}],
+                            function (passes, fails) {
+                                return {
+                                    "pass for true" : passes({enabled:true}),
+                                    "fail for false" : fails({enabled:false}),
+                                    "fail for undefined" : fails({enabled:undefined}),
+                                    "fail for missin" : fails({})
+                                }
                             })
             }
         }));
