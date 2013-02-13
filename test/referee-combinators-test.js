@@ -127,17 +127,18 @@
         },
 
         'extended asserts': {
-            '//one attribute': makeTests('attr', ['name', ca.equals('the name')],
+            'one attribute': makeTests('attr', ['key', ca.equals('value')],
                 function (pass, fail) {
-                    pass({name: 'the name'});   // "pass for equal attribute" : 
-                    fail({name: 'other'});   // "fail for unequal attribute" : 
+                    pass({key: 'value'});   // "pass for equal attribute" : 
+                    fail({key: 'other'});   // "fail for unequal attribute" : 
                     fail({});   // "fail for missing attribute" :
-                    pass({name: 'the name', other: 'ignored'});     // "pass for equal and other attributes" : 
+                    pass({key: 'value', other: 'ignored'});     // "pass for equal and other attributes" : 
                 }),
-            '//attribute under attribute': makeTests('attr', ['sub', ca.attr('name', ca.equals('subname'))],
+            'attribute under attribute': makeTests('attr', ['key0', ca.attr('key1', ca.equals('value'))],
                 function (pass, fail) {
-                    pass({sub: {name: 'subname'}});    // "pass for equal attribute" : 
-                    fail({sub: {}});  // "fail for partial path" : 
+                    pass({key0: {key1: 'value'}});    // "pass for equal attribute" : 
+                    fail({key1: {key0: 'value'}});    // "fail for swapped keys
+                    fail({key0: {}});  // "fail for partial path" : 
                 })
         }
     });
