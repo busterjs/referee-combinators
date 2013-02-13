@@ -54,26 +54,6 @@
         }
     });
 
-    function combinatorTest(assertion, createWithArgs) {
-        return createWithArgs(function (args, tests) {
-            function fails(actual) {
-                return function () {
-                    buster.assert.exception(function () {
-                        combinators.assert[assertion].apply(null, args)(actual);
-                    });
-                };
-            }
-            function passes(actual) {
-                return function () {
-                    buster.refute.exception(function () {
-                        combinators.assert[assertion].apply(null, args)(actual);
-                    });
-                };
-            }
-            return tests(passes, fails);
-        });
-    }
-
     var ca = combinators.assert;
 
     // need to add them here (outside test case),
@@ -126,20 +106,48 @@
             })
         },
 
-        'special': {
+        'extension - ': {
             'attr 1 level': makeTests('attr', ['key', ca.equals('value')],
                 function (pass, fail) {
                     pass({key: 'value'});   // "pass for equal attribute" : 
                     fail({key: 'other'});   // "fail for unequal attribute" : 
                     fail({});   // "fail for missing attribute" :
-                    pass({key: 'value', other: 'ignored'}); // "pass for equal and other attributes"
+                    pass({key: 'value', other: 'ignored'}); // "pass for equal and other value"
                 }),
             'attr 2 levels': makeTests('attr', ['key0', ca.attr('key1', ca.equals('value'))],
                 function (pass, fail) {
-                    pass({key0: {key1: 'value'}});    // "pass for equal attribute" : 
-                    fail({key1: {key0: 'value'}});    // "fail for swapped keys
+                    pass({key0: {key1: 'value'}});    // "pass for equal value"
+                    fail({key0: {key1: 'other'}});    // "fail for unequal value
+                    fail({key1: {key0: 'value'}});    // "fail for non-existent path
                     fail({key0: {}});  // "fail for partial path" : 
-                })
+                }),
+
+            /*
+             * Structure assert is merely syntactic sugar for other assert combinators
+             */
+            'structure': {
+                '1 level': makeTests('structure', [{key: 'value'}],
+                    function (pass, fail) {
+                        pass({key: 'value'});   // "pass for equal attribute" : 
+                        fail({key: 'other'});   // "fail for unequal attribute" : 
+                        fail({});   // "fail for missing attribute" :
+                        pass({key: 'value', other: 'ignored'}); // "pass for equal and other value"
+                    }),
+                '2 levels': makeTests('structure', [{'key0': {'key1': 'value'}}],
+                    function (pass, fail) {
+                        pass({key0: {key1: 'value'}});    // "pass for equal value"
+                        fail({key0: {key1: 'other'}});    // "fail for unequal value
+                        fail({key1: {key0: 'value'}});    // "fail for non-existent path
+                        fail({key0: {}});  // "fail for partial path" : 
+                    }),
+                'explicit assert for attribute': makeTests('structure', [{enabled: ca.isTrue()}],
+                    function (pass, fail) {
+                        pass({enabled: true}); // "pass for true"
+                        fail({enabled: false}); // "fail for false"
+                        fail({enabled: undefined}); // "fail for undefined"
+                        fail({}); // "fail for missin"
+                    })
+            }
         }
     });
 
