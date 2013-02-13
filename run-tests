@@ -11,3 +11,4 @@ buster.testRunner.onCreate(function (runner) {
 
 require("./test/referee-combinators-test");
 require("./test/util-test");
+require("./test/test-helper-test");
