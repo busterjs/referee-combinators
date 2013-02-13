@@ -202,4 +202,4 @@
         }
     });
 
-}(this.util, this.buster));
+}(this.util, this.buster, this.lodash));
