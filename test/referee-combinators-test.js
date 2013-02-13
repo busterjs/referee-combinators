@@ -56,13 +56,14 @@
 
     var ca = combinators.assert;
 
-    //referee.throwOnFailure = false; // TODO: all tests should pass with this as well
-
     // need to add them here (outside test case),
     // if it's done in setUp the custom assertion is not found - why?
     addCustomAssertions();
 
     buster.testCase("combinator ('partial') assertions", {
+
+        '//- TODO: all tests should also pass with `referee.throwOnFailure = false`': function () {
+        },
 
         'derived from custom': {
             //setUp: addCustomAssertions, // not working - why ?
