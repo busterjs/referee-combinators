@@ -22,11 +22,29 @@
 
     buster.testCase("util", {
         "format": {
-            "//throws with no arg": function () {
+            "throws with no arg": function () {
                 assert.exception(format);
             },
-            "//throws with more than one arg": function () {
-                assert.exception(function () { format(1, 2); });
+            "does not throw with more than one arg": function () {
+                refute.exception(function () { format(1, 2); });
+            },
+            "uses only its first arg and ignores the rest": function () {
+                var a1 = 1;
+                var a2 = "two";
+                var a3 = { three: 3 };
+                var actual = format(a1, a2, a3);
+
+                assert.equals(actual, format(a1));
+            },
+
+            // not entirely bogus! _.map calls its callback with 3 args instead of only 1
+            "can be used with lodash's map": function () {
+                var a1 = "one";
+                var a2 = 2;
+                var a3 = {3: "three"};
+
+                assert.equals(_.map([a1, a2, a3], format),
+                              [format(a1), format(a2), format(a3)]);
             },
 
             "with undefined": function () {
