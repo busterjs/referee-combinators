@@ -87,12 +87,14 @@ var testHelper = (function (referee, buster, _) {
             var actual = terms[type][appType].displayName;
             var testFn = (appType === "raw")
                 ? function () {
+                    assert.defined(actual, ".displayName");
                     assert.match(actual, new RegExp("^" + type + "\\."),
                                  "should start with '" + type + ".'"); // 'assert' or 'refute'
                     assert.match(actual, new RegExp("\\." + assertion + "$"),
                                  "should end with name of normal assertion");
                 }
                 : function () { // appType === "appliedOnce"
+                    assert.defined(actual, ".displayName");
                     assert.match(actual, new RegExp("^" + type + "\\."),
                                  "should start with '" + type + ".'"); // 'assert' or 'refute'
                     assert.match(actual, new RegExp("\\." + assertion),
