@@ -136,17 +136,68 @@
         },
 
         "formatArgs": {
-            "with no arg": function () {
-                var a = formatArgs();
-                assert.equals(a, "()", "should put parens around");
+
+            "throws when receiving anything other than exactly one array:": {
+                "no arg": function () {
+                    assert.exception(formatArgs);
+                },
+                "more than 1 arg": function () {
+                    assert.exception(function () { formatArgs([], 1, 2); });
+                },
+                "'undefined' or 'null'": function () {
+                    assert.exception(function () { formatArgs(undefined); });
+                    assert.exception(function () { formatArgs(null); });
+                },
+                "boolean": function () {
+                    assert.exception(function () { formatArgs(true); });
+                    assert.exception(function () { formatArgs(false); });
+                },
+                "string": function () {
+                    assert.exception(function () { formatArgs(""); });
+                    assert.exception(function () { formatArgs("somethn"); });
+                },
+                "number": function () {
+                    assert.exception(function () { formatArgs(0); });
+                    assert.exception(function () { formatArgs(-0); });
+                    assert.exception(function () { formatArgs(1); });
+                    assert.exception(function () { formatArgs(-3.1415926); });
+                },
+                "object": function () {
+                    assert.exception(function () { formatArgs({}); });
+                    assert.exception(function () { formatArgs({a: "b"}); });
+                },
+                "regex": function () {
+                    assert.exception(function () { formatArgs(/.*/); });
+                },
+                "function": function () {
+                    assert.exception(function () { formatArgs(function () {}); });
+                }
             },
+
             "with empty array": function () {
                 var x = [];
-                var xFormatted = format(x);
+                var a = formatArgs(x);
+                assert.equals(a, "()", "should return empty parens");
+            },
+            "with array containing empty array": function () {
+                var x = [[]];
+                var e = new RegExp("^\\("
+                                    + format(x[0]).replace("[", "\\[").replace("]", "\\]")
+                                    + "\\)$");
                 var a = formatArgs(x);
 
-                assert.match(a, /^\(.*\)$/, "should put parens around");
-                assert.match(a, xFormatted, "should contain formatted arg");
+                assert.match(a, e, "should return formatted elem with parens around");
+            },
+            "with array containing mixed elems": function () {
+                var arr = [-0.0, "one", [[[]], []]];
+                var act = formatArgs(arr);
+                var exp = new RegExp("^\\(" + _.map(arr, format).join(" *, *")
+                                                .replace(/\[/g, "\\[")
+                                                .replace(/\]/g, "\\]")
+                                    + "\\)$");
+
+                assert.match(act, /^\(.*\)$/, "should put parens around");
+                assert.match(act, exp, "should format elems in order, separated by commas");
             }
         }
     });
