@@ -22,9 +22,9 @@ var testHelper = (function (referee, buster, _) {
         //
         // TODO: buster.format.ascii.functionName does not exist (it's buster.functionName)
 
-        if (typeof x === "function" && !(x instanceof RegExp)) {
+        if (_.isFunction(x) && !_.isRegExp(x)) {
             var fName = buster.functionName(x);
-            if ((typeof fName === "string") && (fName !== "")) {
+            if (_.isString(fName) && (fName !== "")) {
                 return fName;
             }
         }
@@ -38,7 +38,7 @@ var testHelper = (function (referee, buster, _) {
             assert: { raw: combinators.assert[assertion] },
             refute: { raw: combinators.refute[assertion] }
         };
-        _.forEach(_.keys(terms), function (k) {
+        _.keys(terms).forEach(function (k) {
             var raw = terms[k].raw;
             var appliedOnce = raw.apply(null, argsOf1stApp);
             terms[k].appliedOnce = appliedOnce;
