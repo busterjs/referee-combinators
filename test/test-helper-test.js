@@ -36,7 +36,16 @@
 
     buster.testCase("test-helper", {
 
-        "makeTests": {
+        "makeTests": { // TODO: a lot more...
+
+            "calls callback at least once with two function args": function () {
+                var cb = this.spy();
+                makeTests('isTrue', [], cb);
+
+                assert.greater(cb.callCount, 1, "callback.callCount");
+                assert.isFunction(cb.args[0][0], "1st arg to callback on 1st call");
+                assert.isFunction(cb.args[0][1], "2nd arg to callback on 1st call");
+            },
 
             "returns object with" : {
                 "some properties": function () {
