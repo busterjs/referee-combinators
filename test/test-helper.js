@@ -1,8 +1,9 @@
 /*jslint maxlen:100 */
-var testHelper = (function (referee, buster, _) {
+var testHelper = (function (referee, util, buster, _) {
     if (typeof require === "function" && typeof module === "object") {
-        referee = require("../lib/referee-combinators");
         _ = require("lodash");
+        referee = require("../lib/referee-combinators");
+        util = require("../lib/util");
 
         //// This is a temporary workaround for the development-environment:
         //buster = require("buster-node");
@@ -15,25 +16,8 @@ var testHelper = (function (referee, buster, _) {
     var combinators = referee.combinators;
     var assert = buster.assert;
     var refute = buster.refute;
-
-    function fmt(x) {
-        // buster.format.ascii is not exactly what we need wrt functions
-        // So we'll have to roll our own here :(
-        //
-        // TODO: buster.format.ascii.functionName does not exist (it's buster.functionName)
-
-        if (_.isFunction(x) && !_.isRegExp(x)) {
-            var fName = buster.functionName(x);
-            if (_.isString(fName) && (fName !== "")) {
-                return fName;
-            }
-        }
-        return buster.format.ascii(x);
-    }
-
-    function fmtArgs() {
-        return "(" + _.map(arguments, fmt).join(", ") + ")";
-    }
+    var fmt = util.fmt;
+    var fmtArgs = util.fmtArgs;
 
     function makeTests(assertion, argsOf1stApp, callback) {
         var prefix = "//"; // prepend "//" to see which tests are created
@@ -129,7 +113,7 @@ var testHelper = (function (referee, buster, _) {
         makeTests: makeTests
     };
 
-}(this.referee, this.buster, this.lodash));
+}(this.referee, this.util, this.buster, this.lodash));
 
 if (typeof module === "object") {
     module.exports = testHelper;
