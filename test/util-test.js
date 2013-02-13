@@ -16,8 +16,8 @@
     var assert = buster.assert;
     var refute = buster.refute;
 
-    var format = util.fmt;
-    var formatArgs = util.fmtArgs;
+    var format = util.format;
+    var formatArgs = util.formatArgs;
 
 
     buster.testCase("util", {

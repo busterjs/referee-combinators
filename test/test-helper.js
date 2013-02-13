@@ -16,8 +16,8 @@ var testHelper = (function (referee, util, buster, _) {
     var combinators = referee.combinators;
     var assert = buster.assert;
     var refute = buster.refute;
-    var fmt = util.fmt;
-    var fmtArgs = util.fmtArgs;
+    var format = util.format;
+    var formatArgs = util.formatArgs;
 
     function makeTests(assertion, argsOf1stApp, callback) {
         var prefix = ""; // prepend "//" to see which tests are created
@@ -33,7 +33,7 @@ var testHelper = (function (referee, util, buster, _) {
 
             // TODO: this actually duplicates impl of .displayName
             var rawName = k + "." + assertion;
-            var app1Name = rawName + fmtArgs.apply(this, argsOf1stApp);
+            var app1Name = rawName + formatArgs.apply(this, argsOf1stApp);
             termNames[k] = {
                 raw: rawName,
                 appliedOnce: app1Name
@@ -52,7 +52,7 @@ var testHelper = (function (referee, util, buster, _) {
         function makePass(type) {
             var term = terms[type].appliedOnce;
             return function (actual) {
-                var termName = termNames[type].appliedOnce + fmtArgs(actual);
+                var termName = termNames[type].appliedOnce + formatArgs(actual);
                 addTest(termName, "pass", function () {
                     buster.refute.exception(function () { term(actual); });
                 });
@@ -64,7 +64,7 @@ var testHelper = (function (referee, util, buster, _) {
         function makeFail(type) {
             var term = terms[type].appliedOnce;
             return function (actual) {
-                var termName = termNames[type].appliedOnce + fmtArgs(actual);
+                var termName = termNames[type].appliedOnce + formatArgs(actual);
                 addTest(termName, "fail", function () {
                     buster.assert.exception(function () { term(actual); }, "AssertionError");
                 });
