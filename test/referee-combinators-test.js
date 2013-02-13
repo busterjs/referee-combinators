@@ -126,15 +126,15 @@
             })
         },
 
-        'extended asserts': {
-            'one attribute': makeTests('attr', ['key', ca.equals('value')],
+        'special': {
+            'attr 1 level': makeTests('attr', ['key', ca.equals('value')],
                 function (pass, fail) {
                     pass({key: 'value'});   // "pass for equal attribute" : 
                     fail({key: 'other'});   // "fail for unequal attribute" : 
                     fail({});   // "fail for missing attribute" :
-                    pass({key: 'value', other: 'ignored'});     // "pass for equal and other attributes" : 
+                    pass({key: 'value', other: 'ignored'}); // "pass for equal and other attributes"
                 }),
-            'attribute under attribute': makeTests('attr', ['key0', ca.attr('key1', ca.equals('value'))],
+            'attr 2 levels': makeTests('attr', ['key0', ca.attr('key1', ca.equals('value'))],
                 function (pass, fail) {
                     pass({key0: {key1: 'value'}});    // "pass for equal attribute" : 
                     fail({key1: {key0: 'value'}});    // "fail for swapped keys
@@ -142,32 +142,5 @@
                 })
         }
     });
-
-    buster.testCase('extended asserts',
-        combinatorTest('attr', function (expected) {
-            return {
-                "//one attribute": expected(
-                    ['name', ca.equals('the name')],
-                    function (passes, fails) {
-                        return {
-                            "pass for equal attribute" : passes({name: 'the name'}),
-                            "fail for unequal attribute" : fails({name: 'other'}),
-                            "fail for missing attribute" : fails({}),
-                            "pass for equal and other  attributes" : passes({name: 'the name',
-                                                                             other: 'ignored'})
-                        };
-                    }
-                ),
-                "attribute under attribute": expected(
-                    ['sub', ca.attr('name', ca.equals('subname'))],
-                    function (passes, fails) {
-                        return {
-                            "pass for equal attribute" : passes({sub: {name: 'subname'}}),
-                            "fail for partial path" : fails({sub: {}})
-                        };
-                    }
-                )
-            };
-        }));
 
 }(this.referee, this.buster, this._, this.testHelper));

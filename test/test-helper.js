@@ -38,7 +38,7 @@ var testHelper = (function (referee, buster, _) {
             assert: { raw: combinators.assert[assertion] },
             refute: { raw: combinators.refute[assertion] }
         };
-        _.forEach(_.keys(terms), function(k) {
+        _.forEach(_.keys(terms), function (k) {
             var raw = terms[k].raw;
             var appliedOnce = raw.apply(null, argsOf1stApp);
             terms[k].appliedOnce = appliedOnce;
@@ -87,22 +87,23 @@ var testHelper = (function (referee, buster, _) {
             var actual = terms[type][appType].displayName;
             var testFn = (appType === "raw")
                 ? function () {
-                    assert.match(actual, new RegExp("^" + type + "\."),
+                    assert.match(actual, new RegExp("^" + type + "\\."),
                                  "should start with '" + type + ".'"); // 'assert' or 'refute'
-                    assert.match(actual, new RegExp("\." + assertion + "$"),
+                    assert.match(actual, new RegExp("\\." + assertion + "$"),
                                  "should end with name of normal assertion");
                 }
                 : function () { // appType === "appliedOnce"
-                    assert.match(actual, new RegExp("^" + type + "\."),
+                    assert.match(actual, new RegExp("^" + type + "\\."),
                                  "should start with '" + type + ".'"); // 'assert' or 'refute'
-                    assert.match(actual, new RegExp("\." + assertion),
+                    assert.match(actual, new RegExp("\\." + assertion),
                                  "should contain name of normal assertion");
                     assert.match(actual, /\)$/, "should end with closing parenthesis");
-                    //refute.match(actual, /\n/, "should not span multiple lines");
+                    refute.match(actual, /\n/, "should not span multiple lines");
                 };
-            addTest(termNames[type][appType] + " [" + appType + "]", "have .displayName", testFn);
+            addTest(termNames[type][appType] + " [" + appType + "]",
+                    "have proper .displayName",
+                    testFn);
         }
-        
 
         var t, term, name;
         t = "assert";
