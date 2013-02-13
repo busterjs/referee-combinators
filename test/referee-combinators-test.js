@@ -56,6 +56,8 @@
 
     var ca = combinators.assert;
 
+    //referee.throwOnFailure = false; // TODO: all tests should pass with this as well
+
     // need to add them here (outside test case),
     // if it's done in setUp the custom assertion is not found - why?
     addCustomAssertions();
@@ -73,14 +75,6 @@
         },
 
         'derived from built-in unary': {
-            'isTrue unapplied defines .displayName': function () {
-                assert.defined(combinators.assert.isTrue.displayName, "assert.isTrue.displayName");
-                assert.defined(combinators.refute.isTrue.displayName, "refute.isTrue.displayName");
-            },
-            'isTrue applied once defines .displayName': function () {
-                assert.defined(combinators.assert.isTrue().displayName, "assert.isTrue().displayName");
-                assert.defined(combinators.refute.isTrue().displayName, "refute.isTrue().displayName");
-            },
             'isTrue': makeTests('isTrue', [], function (pass, fail) {
                 pass(true);
                 fail(false);
@@ -106,7 +100,7 @@
             })
         },
 
-        'extension - ': {
+        'extension -': {
             'attr 1 level': makeTests('attr', ['key', ca.equals('value')],
                 function (pass, fail) {
                     pass({key: 'value'});   // "pass for equal attribute" : 

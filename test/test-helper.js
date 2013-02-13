@@ -20,7 +20,7 @@ var testHelper = (function (referee, util, buster, _) {
     var fmtArgs = util.fmtArgs;
 
     function makeTests(assertion, argsOf1stApp, callback) {
-        var prefix = "//"; // prepend "//" to see which tests are created
+        var prefix = ""; // prepend "//" to see which tests are created
         var tests = {};
         var termNames = {}, terms = {
             assert: { raw: combinators.assert[assertion] },
