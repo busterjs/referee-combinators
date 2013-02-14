@@ -198,6 +198,18 @@
 
                 assert.match(act, /^\(.*\)$/, "should put parens around");
                 assert.match(act, exp, "should format elems in order, separated by commas");
+            },
+            "//with the implicit 'arguments'": function () {
+                var exercise = function () { return formatArgs(arguments); };
+                var arr = ["qumbl", null, 42, undefined, { foo: "bar" }];
+                var act = exercise.apply(null, arr);
+                var exp = new RegExp("^\\(" + _.map(arr, format).join(" *, *")
+                                                .replace(/\[/g, "\\[")
+                                                .replace(/\]/g, "\\]")
+                                    + "\\)$");
+
+                assert.match(act, /^\(.*\)$/, "should put parens around");
+                assert.match(act, exp, "should format elems in order, separated by commas");
             }
         },
 
@@ -211,29 +223,62 @@
                 refute.called(spy);
             },
 
-            "visits all own props in flat structure": function () {
-                var o = {a: 1, b: 2, c: 3};
-                var spy = this.spy();
-                forOwnRecursive(o, spy);
+            "visits all own props once": {
+                "in flat object": function () {
+                    var o = {a: 1, b: 2, c: 3};
+                    var spy = this.spy();
+                    forOwnRecursive(o, spy);
 
-                assert.equals(spy.callCount, 3, "cb callCount");
-                assert.calledWith(spy, 1, "a", o, "[a]");
-                assert.calledWith(spy, 2, "b", o, "[b]");
-                assert.calledWith(spy, 3, "c", o, "[c]");
-            },
+                    assert.equals(spy.callCount, 3, "cb callCount");
+                    assert.calledWith(spy, 1, [o, "a"]);
+                    assert.calledWith(spy, 2, [o, "b"]);
+                    assert.calledWith(spy, 3, [o, "c"]);
+                },
 
-            "visits all own props in tree structure": function () {
-                var o = {a: {b: 2, c: {d: 4}}};
-                var spy = this.spy();
-                forOwnRecursive(o, spy);
+                "once in tree": function () {
+                    var o = {a: {b: 2, c: {d: 4}}};
+                    var spy = this.spy();
+                    forOwnRecursive(o, spy);
 
-                assert.equals(spy.callCount, 4, "cb callCount");
-                assert.calledWith(spy, o.a, "a", o, "[a]");
-                assert.calledWith(spy, o.a.b, "b", o, "[a][b]");
-                assert.calledWith(spy, o.a.c, "c", o, "[a][c]");
-                assert.calledWith(spy, o.a.c.d, "d", o, "[a][c][d]");
-            },
+                    assert.calledWith(spy, o.a,     [o, "a"]);
+                    assert.calledWith(spy, o.a.b,   [o, "a", "b"]);
+                    assert.calledWith(spy, o.a.c,   [o, "a", "c"]);
+                    assert.calledWith(spy, o.a.c.d, [o, "a", "c", "d"]);
 
+                    // Make sure these were *exactly* the calls (none else).
+                    // Let's put this last to not suppress info from failures above.
+                    assert.equals(spy.callCount, 4, "cb callCount");
+                },
+
+                "once in confluent DAG": function () {
+                    // DAG = Directed Acyclic Graph; confluent: look at o below
+                    var x = {c: { d: 4} };
+                    var o = {a: x, b: x};
+                    var spy = this.spy(function (v, path) {
+                        buster.log("call " + spy.callCount + ": [" + path.join("][") + "]");
+                    });
+                    forOwnRecursive(o, spy);
+
+                    assert.calledWith(spy, x, [o, "a"]);
+                    assert.calledWith(spy, x, [o, "b"]);
+
+                    var isPath_a_c = spy.calledWith(x.c,   [o, "a", "c"]);
+                    var isPath_b_c = spy.calledWith(x.c,   [o, "b", "c"]);
+                    assert(isPath_a_c || isPath_b_c, "path o.a.c or o.b.c should have been taken");
+                    refute(isPath_a_c && isPath_b_c,
+                        "EITHER o.a.c OR ELSE o.b.c should have been taken, NOT both!");
+
+                    if (isPath_a_c) {
+                        assert.calledWith(spy, x.c.d, [o, "a", "c", "d"]);
+                    } else { // OR ELSE (but not both)
+                        assert.calledWith(spy, x.c.d, [o, "b", "c", "d"]);
+                    }
+
+                    // Make sure these were *exactly* the calls (none else).
+                    // Let's put this last to not suppress info from failures above.
+                    assert.equals(spy.callCount, 4, "cb callCount");
+                }
+            }
         }
     });
 

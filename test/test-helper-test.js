@@ -59,9 +59,10 @@
                     //actual.whuteva = { f: function () {}, two: { three : 3} };
 
                     assert.isObject(actual);
-                    util.forOwnRecursive(actual, function (v, k, o, path) {
-                        assert.isFunctionOrObject(v, path);
-                    }, this, "makeTests(...)");
+                    util.forOwnRecursive(actual, function (v, path) {
+                        assert.isFunctionOrObject(v,
+                            "makeTests(...)[" + _.tail(path).join("][") + "]");
+                    });
                 }
             }
         }
