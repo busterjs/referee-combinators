@@ -223,19 +223,55 @@
                 refute.called(spy);
             },
 
-            "//does not visit properties from up the prototype chain": function () {
+            "does not visit properties from up the prototype chain": function () {
+                function Dog(name) {
+                    this.name = name;
+                }
+                Dog.prototype.bark = function () {
+                    return "Woof!";
+                };
+                var fido = new Dog("Fido");
+                assert.equals(fido.name, "Fido"); // let's check that Fido's as we
+                assert.equals(fido.bark(), "Woof!"); // want him
+                var spy = this.spy(function (v, path) {
+                    buster.log("call " + spy.callCount + ": [" + path.join("][") + "]");
+                });
+
+                forOwnRecursive(fido, spy);
+                assert.calledWith(spy, "Fido", [fido, "name"]);
+                refute.calledWith(spy, fido.bark, [fido, "bark"]);
+
+                // Make sure these were *exactly* the calls (none else).
+                // Let's put this last to not suppress info from failures above.
+                assert.equals(spy.callCount, 1, "cb callCount");
             },
 
             "visits all own props once": {
                 "in flat object": function () {
-                    var o = {a: 1, b: 2, c: 3};
+                    var o = {a: 1, b: 2, c: function () {}};
                     var spy = this.spy();
                     forOwnRecursive(o, spy);
 
+                    assert.calledWith(spy, o.a, [o, "a"]);
+                    assert.calledWith(spy, o.b, [o, "b"]);
+                    assert.calledWith(spy, o.c, [o, "c"]);
+
+                    // Make sure these were *exactly* the calls (none else).
+                    // Let's put this last to not suppress info from failures above.
                     assert.equals(spy.callCount, 3, "cb callCount");
-                    assert.calledWith(spy, 1, [o, "a"]);
-                    assert.calledWith(spy, 2, [o, "b"]);
-                    assert.calledWith(spy, 3, [o, "c"]);
+                },
+
+                "//in function": function () {
+                    var f = function () {};
+                    f.name = "f";
+                    var spy = this.spy();
+                    forOwnRecursive(f, spy);
+
+                    assert.calledWith(spy, f.name, [f, "name"]);
+
+                    // Make sure these were *exactly* the calls (none else).
+                    // Let's put this last to not suppress info from failures above.
+                    assert.equals(spy.callCount, 1, "cb callCount");
                 },
 
                 "in tree": function () {
