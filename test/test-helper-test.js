@@ -34,6 +34,25 @@
         }
     });
 
+    // TODO: move this to util.js and write tests for it in util-test.js
+    function forOwnRecursive(object, callback, thisArg, path, depth) {
+        callback = callback || _.identity;
+        thisArg = thisArg || this;
+        path = path || "";
+        depth = depth || 0;
+        return _.forOwn(object, function (v, k, o) {
+            var path1LevelDeeper = path + "[" + k + "]";
+            buster.log(path1LevelDeeper);
+            if (depth > 3) {
+                throw new Error("debug @" + path1LevelDeeper);
+            }
+            callback.call(this, v, k, o, path1LevelDeeper);
+            // TODO: check return value of callback and stop when _.forOwn would
+            // TODO: don't follow circularities
+            forOwnRecursive(v, callback, this, path1LevelDeeper, depth + 1);
+        }, thisArg);
+    }
+
     buster.testCase("test-helper", {
 
         "makeTests": { // TODO: a lot more...
@@ -57,19 +76,11 @@
                 "own props either functions or objects of which the same is true": function () {
                     var actual = makeTests('isTrue', [], function (pass, fail) {});
                     //actual.whuteva = { f: function () {}, two: { three : 3} };
-                    function recAsserts(o, path) {
-                        _.forOwn(o, function (v, k) {
-                            var myPath = path + "['" + k + "']";
-                            assert.isFunctionOrObject(v, myPath);
-                            if (_.isObject(v)) { // make sure we really pass only objects
-                                recAsserts(v, myPath);
-                            }
-                        });
-                        return true;
-                    }
 
                     assert.isObject(actual);
-                    recAsserts(actual, "makeTests(...)");
+                    forOwnRecursive(actual, function (v, k, o, path) {
+                        assert.isFunctionOrObject(v, path);
+                    }, this, "makeTests(...)");
                 }
             }
         }
