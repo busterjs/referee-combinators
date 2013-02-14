@@ -226,55 +226,127 @@
             "does not visit properties from up the prototype chain": function () {
                 function Dog(name) {
                     this.name = name;
+                    this.poop = function () {
+                        return "poop"
+                    };
                 }
                 Dog.prototype.bark = function () {
                     return "Woof!";
                 };
                 var fido = new Dog("Fido");
                 assert.equals(fido.name, "Fido"); // let's check that Fido's as we
-                assert.equals(fido.bark(), "Woof!"); // want him
+                assert.equals(fido.bark(), "Woof!"); // want
+                assert.equals(fido.poop(), "poop"); // him
                 var spy = this.spy(function (v, path) {
                     buster.log("call " + spy.callCount + ": [" + path.join("][") + "]");
                 });
 
                 forOwnRecursive(fido, spy);
                 assert.calledWith(spy, "Fido", [fido, "name"]);
-                refute.calledWith(spy, fido.bark, [fido, "bark"]);
+                assert.calledWith(spy, fido.poop, [fido, "poop"]);
+                refute.calledWith(spy, fido.bark, [fido, "bark"]); // NOT this one!
 
                 // Make sure these were *exactly* the calls (none else).
                 // Let's put this last to not suppress info from failures above.
-                assert.equals(spy.callCount, 1, "cb callCount");
+                assert.equals(spy.callCount, 2, "cb callCount");
             },
 
-            "visits all own props once": {
-                "in flat object": function () {
-                    var o = {a: 1, b: 2, c: function () {}};
-                    var spy = this.spy();
+            "visits each own prop once": {
+                "- at least top-level ones in plain object (all kinds of values)": function () {
+                    var o = {
+                        a: NaN,
+                        b: undefined,
+                        c: null,
+                        d: false,
+                        e: true,
+                        f: function (a, b) { return a + b; },
+                        g: function g(a, b) { return a + b; },
+                        h: new Function("a", "b", "return a + b"),
+                        i: "",
+                        j: "string literal",
+                        k: new String('new String(..)'),
+                        l: {},
+                        m: new Object(),
+                        n: {foo: "bar", baz: {x: 42}, qumbl: {x: 23}},
+                        o: {0: "0", 1: 1, 2: {0: 0, 1: null}, 3: undefined}, // array-like
+                        p: [],
+                        q: [0, 1, 2],
+                        r: new Array(),
+                        s: new Array(5), // length
+                        t: new Array(1, 2, 3), // 3 elems
+                        u: /^a regular express*ion$/,
+                        v: new RegExp("^another regular express*ion$"),
+                        w: 15,
+                        x: new Number(15),
+                        y: 3.1415927,
+                        z: 0
+                    };
+                    ["f", "g", "h"].forEach(function (k) {
+                        var fn = o[k];
+                        fn.name = "o." + k + ".name: "
+                            + "cannot be changed, remains non-enumerable hence won't appear";
+                        fn.displayName = "o." + k + ".displayName: "
+                            + "will be visited coz it's enumerable"
+                            + " - and be used as name by `format`";
+                    });
+                    var spy = this.spy(function (v, path) {
+                        buster.log("call " + spy.callCount + ": [" + path.join("][") + "]: "
+                            + format(v));
+                    });
                     forOwnRecursive(o, spy);
+                    assert(false); // uncomment to see log
 
-                    assert.calledWith(spy, o.a, [o, "a"]);
+                    // NaN is special, we cannot just assert.calledWith(spy, o.a, [o, "a"])
+                    assert.isNaN(spy.args[0][0], "first arg of first call");
+                    assert.equals(spy.args[0][1], [o, "a"], "second arg of first call");
+
+                    // rest is easy:
                     assert.calledWith(spy, o.b, [o, "b"]);
                     assert.calledWith(spy, o.c, [o, "c"]);
-
-                    // Make sure these were *exactly* the calls (none else).
-                    // Let's put this last to not suppress info from failures above.
-                    assert.equals(spy.callCount, 3, "cb callCount");
+                    assert.calledWith(spy, o.d, [o, "d"]);
+                    assert.calledWith(spy, o.e, [o, "e"]);
+                    assert.calledWith(spy, o.f, [o, "f"]);
+                    assert.calledWith(spy, o.g, [o, "g"]);
+                    assert.calledWith(spy, o.h, [o, "h"]);
+                    assert.calledWith(spy, o.i, [o, "i"]);
+                    assert.calledWith(spy, o.j, [o, "j"]);
+                    assert.calledWith(spy, o.k, [o, "k"]);
+                    assert.calledWith(spy, o.l, [o, "l"]);
+                    assert.calledWith(spy, o.m, [o, "m"]);
+                    assert.calledWith(spy, o.n, [o, "n"]);
+                    assert.calledWith(spy, o.o, [o, "o"]);
+                    assert.calledWith(spy, o.p, [o, "p"]);
+                    assert.calledWith(spy, o.q, [o, "q"]);
+                    assert.calledWith(spy, o.r, [o, "r"]);
+                    assert.calledWith(spy, o.s, [o, "s"]);
+                    assert.calledWith(spy, o.t, [o, "t"]);
+                    assert.calledWith(spy, o.u, [o, "u"]);
+                    assert.calledWith(spy, o.v, [o, "v"]);
+                    assert.calledWith(spy, o.w, [o, "w"]);
+                    assert.calledWith(spy, o.x, [o, "x"]);
+                    assert.calledWith(spy, o.y, [o, "y"]);
+                    assert.calledWith(spy, o.z, [o, "z"]);
                 },
 
-                "//in function": function () {
+                "in function": function () {
                     var f = function () {};
-                    f.name = "f";
+                    f.name = "cannot be changed & is not enumerable";
+                    f.fooz = "will appear";
+                    assert.equals(f.name, "", "f.name"); // it just can't be changed
+                    assert.equals(f.fooz, "will appear", "f.fooz");
+                    assert.equals(_.keys(f), ["fooz"], "_.keys(f)");
                     var spy = this.spy();
                     forOwnRecursive(f, spy);
 
-                    assert.calledWith(spy, f.name, [f, "name"]);
+                    assert.calledWith(spy, f.fooz, [f, "fooz"]);
+                    refute.calledWith(spy, f.name, [f, "name"]); // NOT this one!
 
                     // Make sure these were *exactly* the calls (none else).
                     // Let's put this last to not suppress info from failures above.
                     assert.equals(spy.callCount, 1, "cb callCount");
                 },
 
-                "in tree": function () {
+                "in tree-like object": function () {
                     var o = {a: {b: 2, c: {d: 4}}};
                     var spy = this.spy();
                     forOwnRecursive(o, spy);
@@ -289,7 +361,7 @@
                     assert.equals(spy.callCount, 4, "cb callCount");
                 },
 
-                "in confluent DAG": function () {
+                "in confluent DAG object": function () {
                     // DAG = Directed Acyclic Graph; confluent: look at o below
                     var x = {c: { d: 4} };
                     var o = {a: x, b: x};
