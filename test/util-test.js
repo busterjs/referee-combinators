@@ -214,6 +214,18 @@
         },
 
         "forOwnRecursive": {
+            setUp: function () {
+                var self = this;
+                self.makeCb = function (maxPathLen) {
+                    var spy = self.spy(function (v, path) {
+                        buster.log("call " + spy.callCount + ": [" + path.join("][") + "]");
+                        if (maxPathLen && (path.length > maxPathLen)) {
+                            throw new Error("infinite regression?!");
+                        }
+                    });
+                    return spy;
+                };
+            },
 
             "does not call callback for empty object": function () {
                 var o = {};
@@ -226,9 +238,7 @@
             "does not visit properties from up the prototype chain": function () {
                 function Dog(name) {
                     this.name = name;
-                    this.poop = function () {
-                        return "poop"
-                    };
+                    this.poop = function () { return "poop"; };
                 }
                 Dog.prototype.bark = function () {
                     return "Woof!";
@@ -237,9 +247,7 @@
                 assert.equals(fido.name, "Fido"); // let's check that Fido's as we
                 assert.equals(fido.bark(), "Woof!"); // want
                 assert.equals(fido.poop(), "poop"); // him
-                var spy = this.spy(function (v, path) {
-                    buster.log("call " + spy.callCount + ": [" + path.join("][") + "]");
-                });
+                var spy = this.makeCb();
 
                 forOwnRecursive(fido, spy);
                 assert.calledWith(spy, "Fido", [fido, "name"]);
@@ -289,12 +297,9 @@
                             + "will be visited coz it's enumerable"
                             + " - and be used as name by `format`";
                     });
-                    var spy = this.spy(function (v, path) {
-                        buster.log("call " + spy.callCount + ": [" + path.join("][") + "]: "
-                            + format(v));
-                    });
+                    var spy = this.makeCb();
                     forOwnRecursive(o, spy);
-                    assert(false); // uncomment to see log
+                    // assert(false); // uncomment to see log
 
                     // NaN is special, we cannot just assert.calledWith(spy, o.a, [o, "a"])
                     assert.isNaN(spy.args[0][0], "first arg of first call");
@@ -335,7 +340,7 @@
                     assert.equals(f.name, "", "f.name"); // it just can't be changed
                     assert.equals(f.fooz, "will appear", "f.fooz");
                     assert.equals(_.keys(f), ["fooz"], "_.keys(f)");
-                    var spy = this.spy();
+                    var spy = this.makeCb();
                     forOwnRecursive(f, spy);
 
                     assert.calledWith(spy, f.fooz, [f, "fooz"]);
@@ -348,7 +353,7 @@
 
                 "in tree-like object": function () {
                     var o = {a: {b: 2, c: {d: 4}}};
-                    var spy = this.spy();
+                    var spy = this.makeCb();
                     forOwnRecursive(o, spy);
 
                     assert.calledWith(spy, o.a,     [o, "a"]);
@@ -365,9 +370,7 @@
                     // DAG = Directed Acyclic Graph; confluent: look at o below
                     var x = {c: { d: 4} };
                     var o = {a: x, b: x};
-                    var spy = this.spy(function (v, path) {
-                        buster.log("call " + spy.callCount + ": [" + path.join("][") + "]");
-                    });
+                    var spy = this.makeCb();
                     forOwnRecursive(o, spy);
 
                     assert.calledWith(spy, x, [o, "a"]); // we see the *value* x twice (OK)
@@ -399,12 +402,7 @@
                 "in cyclic object": function () {
                     var o = {a: {b: null}};
                     o.a.b = o;
-                    var spy = this.spy(function (v, path) {
-                        buster.log("call " + spy.callCount + ": [" + path.join("][") + "]");
-                        if (path.length > 6) { // actually 4 but let's go a bit into it
-                            throw new Error("infinite regression");
-                        }
-                    });
+                    var spy = this.makeCb(6); // actually already at 4 but let's go a bit into it
                     forOwnRecursive(o, spy);
 
                     assert.calledWith(spy, o.a, [o, "a"]);
@@ -424,9 +422,7 @@
                     refute.same(iso1, iso2);
                     assert.same(iso1.bot, iso2.bot); // shallow!
                     var o = { i1: iso1, i2: iso2 };
-                    var spy = this.spy(function (v, path) {
-                        buster.log("call " + spy.callCount + ": [" + path.join("][") + "]");
-                    });
+                    var spy = this.makeCb();
                     forOwnRecursive(o, spy);
 
                     assert.calledWith(spy, iso1, [o, "i1"]);
