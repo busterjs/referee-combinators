@@ -223,6 +223,9 @@
                 refute.called(spy);
             },
 
+            "//does not visit properties from up the prototype chain": function () {
+            },
+
             "visits all own props once": {
                 "in flat object": function () {
                     var o = {a: 1, b: 2, c: 3};
@@ -270,9 +273,9 @@
                     // *keys* then we'll see it more than once - but only then.
                     var isPath_a_c = spy.calledWith(x.c,   [o, "a", "c"]);
                     var isPath_b_c = spy.calledWith(x.c,   [o, "b", "c"]);
-                    assert(isPath_a_c || isPath_b_c, "path o.a.c or o.b.c should have been taken");
+                    assert(isPath_a_c || isPath_b_c, "path o.a.c or o.b.c should be taken");
                     refute(isPath_a_c && isPath_b_c,
-                        "EITHER o.a.c OR ELSE o.b.c should have been taken, NOT both!");
+                        "EITHER o.a.c OR ELSE o.b.c should be taken, NOT both!");
 
                     if (isPath_a_c) {
                         assert.calledWith(spy, x.c.d, [o, "a", "c", "d"]);
@@ -302,6 +305,40 @@
                     // Make sure these were *exactly* the calls (none else).
                     // Let's put this last to not suppress info from failures above.
                     assert.equals(spy.callCount, 2, "cb callCount");
+                },
+
+                "in object with isomorphic but non-identical sub-objects": function () {
+                    var bottom = { z: "this only once!" };
+                    var iso1 = { x: 5, bot: bottom };
+                    var iso2 = _.clone(iso1);
+                    // it's a shallow copy:
+                    assert.equals(iso1, iso2);
+                    refute.same(iso1, iso2);
+                    assert.same(iso1.bot, iso2.bot); // shallow!
+                    var o = { i1: iso1, i2: iso2 };
+                    var spy = this.spy(function (v, path) {
+                        buster.log("call " + spy.callCount + ": [" + path.join("][") + "]");
+                    });
+                    forOwnRecursive(o, spy);
+
+                    assert.calledWith(spy, iso1, [o, "i1"]);
+                    assert.calledWith(spy, iso2, [o, "i2"]);
+                    assert.calledWith(spy, iso1.x, [o, "i1", "x"]);
+                    assert.calledWith(spy, iso2.x, [o, "i2", "x"]);
+                    assert.calledWith(spy, bottom, [o, "i1", "bot"]);
+                    assert.calledWith(spy, bottom, [o, "i2", "bot"]);
+
+                    // see "in confluent DAG" for a comment
+                    var isThru1 = spy.calledWith(bottom.z, [o, "i1", "bot", "z"]);
+                    var isThru2 = spy.calledWith(bottom.z, [o, "i2", "bot", "z"]);
+                    assert(isThru1 || isThru2,
+                        "path o.iso1.bot.z or o.iso2.bot.z should be taken");
+                    refute(isThru1 && isThru2,
+                        "EITHER o.iso1.bot.z OR ELSE o.iso2.bot.z should be taken, NOT both!");
+
+                    // Make sure these were *exactly* the calls (none else).
+                    // Let's put this last to not suppress info from failures above.
+                    assert.equals(spy.callCount, 7, "cb callCount");
                 }
             }
         }
