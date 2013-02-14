@@ -235,7 +235,7 @@
                     assert.calledWith(spy, 3, [o, "c"]);
                 },
 
-                "once in tree": function () {
+                "in tree": function () {
                     var o = {a: {b: 2, c: {d: 4}}};
                     var spy = this.spy();
                     forOwnRecursive(o, spy);
@@ -250,7 +250,7 @@
                     assert.equals(spy.callCount, 4, "cb callCount");
                 },
 
-                "once in confluent DAG": function () {
+                "in confluent DAG": function () {
                     // DAG = Directed Acyclic Graph; confluent: look at o below
                     var x = {c: { d: 4} };
                     var o = {a: x, b: x};
@@ -259,9 +259,15 @@
                     });
                     forOwnRecursive(o, spy);
 
-                    assert.calledWith(spy, x, [o, "a"]);
-                    assert.calledWith(spy, x, [o, "b"]);
+                    assert.calledWith(spy, x, [o, "a"]); // we see the *value* x twice (OK)
+                    assert.calledWith(spy, x, [o, "b"]); // as value of different keys of o
 
+                    // However, we should see value c = {d: 4} ONLY ONCE because it
+                    // *appears* only for one key. So it's NOT about enumerating all
+                    // paths in the structure, rather it's about enumerating all keys
+                    // (albeit "fully qualified"), without duplication.
+                    // So if a particular value happens to be associated with *different*
+                    // *keys* then we'll see it more than once - but only then.
                     var isPath_a_c = spy.calledWith(x.c,   [o, "a", "c"]);
                     var isPath_b_c = spy.calledWith(x.c,   [o, "b", "c"]);
                     assert(isPath_a_c || isPath_b_c, "path o.a.c or o.b.c should have been taken");
@@ -277,6 +283,25 @@
                     // Make sure these were *exactly* the calls (none else).
                     // Let's put this last to not suppress info from failures above.
                     assert.equals(spy.callCount, 4, "cb callCount");
+                },
+
+                "in cyclic object": function () {
+                    var o = {a: {b: null}};
+                    o.a.b = o;
+                    var spy = this.spy(function (v, path) {
+                        buster.log("call " + spy.callCount + ": [" + path.join("][") + "]");
+                        if (path.length > 6) { // actually 4 but let's go a bit into it
+                            throw new Error("infinite regression");
+                        }
+                    });
+                    forOwnRecursive(o, spy);
+
+                    assert.calledWith(spy, o.a, [o, "a"]);
+                    assert.calledWith(spy, o,   [o, "a", "b"]);
+
+                    // Make sure these were *exactly* the calls (none else).
+                    // Let's put this last to not suppress info from failures above.
+                    assert.equals(spy.callCount, 2, "cb callCount");
                 }
             }
         }
