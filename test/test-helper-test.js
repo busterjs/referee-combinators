@@ -34,25 +34,6 @@
         }
     });
 
-    // TODO: move this to util.js and write tests for it in util-test.js
-    function forOwnRecursive(object, callback, thisArg, path, depth) {
-        callback = callback || _.identity;
-        thisArg = thisArg || this;
-        path = path || "";
-        depth = depth || 0;
-        return _.forOwn(object, function (v, k, o) {
-            var path1LevelDeeper = path + "[" + k + "]";
-            buster.log(path1LevelDeeper);
-            if (depth > 3) {
-                throw new Error("debug @" + path1LevelDeeper);
-            }
-            callback.call(this, v, k, o, path1LevelDeeper);
-            // TODO: check return value of callback and stop when _.forOwn would
-            // TODO: don't follow circularities
-            forOwnRecursive(v, callback, this, path1LevelDeeper, depth + 1);
-        }, thisArg);
-    }
-
     buster.testCase("test-helper", {
 
         "makeTests": { // TODO: a lot more...
@@ -78,7 +59,7 @@
                     //actual.whuteva = { f: function () {}, two: { three : 3} };
 
                     assert.isObject(actual);
-                    forOwnRecursive(actual, function (v, k, o, path) {
+                    util.forOwnRecursive(actual, function (v, k, o, path) {
                         assert.isFunctionOrObject(v, path);
                     }, this, "makeTests(...)");
                 }

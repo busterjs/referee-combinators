@@ -18,7 +18,7 @@
 
     var format = util.format;
     var formatArgs = util.formatArgs;
-
+    var forOwnRecursive = util.forOwnRecursive;
 
     buster.testCase("util", {
         "format": {
@@ -199,6 +199,41 @@
                 assert.match(act, /^\(.*\)$/, "should put parens around");
                 assert.match(act, exp, "should format elems in order, separated by commas");
             }
+        },
+
+        "forOwnRecursive": {
+
+            "does not call callback for empty object": function () {
+                var o = {};
+                var spy = this.spy();
+                forOwnRecursive(o, spy);
+
+                refute.called(spy);
+            },
+
+            "visits all own props in flat structure": function () {
+                var o = {a: 1, b: 2, c: 3};
+                var spy = this.spy();
+                forOwnRecursive(o, spy);
+
+                assert.equals(spy.callCount, 3, "cb callCount");
+                assert.calledWith(spy, 1, "a", o, "[a]");
+                assert.calledWith(spy, 2, "b", o, "[b]");
+                assert.calledWith(spy, 3, "c", o, "[c]");
+            },
+
+            "visits all own props in tree structure": function () {
+                var o = {a: {b: 2, c: {d: 4}}};
+                var spy = this.spy();
+                forOwnRecursive(o, spy);
+
+                assert.equals(spy.callCount, 4, "cb callCount");
+                assert.calledWith(spy, o.a, "a", o, "[a]");
+                assert.calledWith(spy, o.a.b, "b", o, "[a][b]");
+                assert.calledWith(spy, o.a.c, "c", o, "[a][c]");
+                assert.calledWith(spy, o.a.c.d, "d", o, "[a][c][d]");
+            },
+
         }
     });
 
