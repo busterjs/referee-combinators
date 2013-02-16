@@ -19,6 +19,66 @@ var testHelper = (function (referee, util, buster, _) {
     var format = util.format;
     var formatArgs = util.formatArgs;
 
+/* custom assertions ------------------------------------------------------- */
+
+    var isPlainObjectOrFunc = {
+        assert: function (actual) {
+            return _.isPlainObject(actual) || _.isFunction(actual);
+        },
+        assertMessage: "${2}Expected ${0} to be either plain object or function but is ${1}",
+        refuteMessage: "${2}Expected ${0} to be neither plain function nor object but is ${1}",
+        expectation: "toBeObjectOrFunc",
+        values: function (thing, message) {
+            /*jslint white:true*/ // NO, I do NOT want to indent here!
+            var type = _.isArray(thing) ? "array" :
+                       _.isRegExp(thing) ? "regexp" :
+                       _.isNull(thing) ? "null" :
+                       typeof thing;
+            return [thing, type, message ? message + ": " : ""];
+        }
+    };
+
+    var isProperSubsetOf = {
+        assert: function (subset, superset) {
+            var subMinusSuper = _.difference(subset, superset);
+            var superMinusSub = _.difference(superset, subset);
+            return _.isEmpty(subMinusSuper) && !_.isEmpty(superMinusSub);
+        },
+        assertMessage: "${2}Expected\n\n${0}\n\nto be a proper subset of\n\n${1}\n\nBUT ${3}",
+        refuteMessage: "${2}Expected\n\n${0}\n\nNOT to be a proper subset of\n\n${1}\n\nBUT it is!",
+        expectation: "toBeProperSubsetOf",
+        values: function (subset, superset, message) {
+            // TODO: what a pity that we have to do the work from `assert` again in `values`...
+            var reason;
+            var subMinusSuper = _.difference(subset, superset);
+            var superMinusSub = _.difference(superset, subset);
+            if (!_.isEmpty(subMinusSuper)) {
+                if (_.isEmpty(superMinusSub)) {
+                    reason = "it is just the other way round."
+                        + " These are in the former but not in the latter: "
+                        + format(subMinusSuper);
+                } else {
+                    reason = "some in the former are missing in the latter: "
+                        + format(subMinusSuper);
+                }
+            } else { // subMinusSuper IS empty
+                if (_.isEmpty(superMinusSub)) {
+                    reason = "they are equal (as sets)";
+                /*
+                } else {
+                    throw new Error("should not happen");
+                    // It does happen - we're being called even
+                    // if assert returned true (or refute returned false)
+                    // This means that we're doing even more unnecessary work... :(
+                */
+                }
+            }
+            return [subset, superset, message ? message + ": " : "", reason];
+        }
+    };
+
+/* public ------------------------------------------------------------------ */
+
     function makeTests(assertion, argsOf1stApp, callback) {
         var prefix = ""; // prepend "//" to see which tests are created
         var tests = {};
@@ -109,8 +169,16 @@ var testHelper = (function (referee, util, buster, _) {
         return tests;
     }
 
+/* what's exposed ---------------------------------------------------------- */
+
+    buster.assertions.add("isPlainObjectOrFunc", isPlainObjectOrFunc);
+    buster.assertions.add("isProperSubsetOf", isProperSubsetOf);
     return {
-        makeTests: makeTests
+        makeTests: makeTests,
+        rawCustomAssertions: {  // temp: make 'em available so they can be tested
+            isPlainObjectOrFunc: isPlainObjectOrFunc,   // ...on different instance
+            isProperSubsetOf: isProperSubsetOf          // ...of referee...
+        }
     };
 
 }(this.referee, this.util, this.buster, this.lodash));
