@@ -1,8 +1,8 @@
 /*jslint maxlen:100 */
 /*jslint regexp:true*/ // allow . and [^...] in regexps 
-(function (testHelper, util, buster, referee, _) {
+(function (h, util, buster, referee, _) {
     if (typeof require === "function" && typeof module === "object") {
-        testHelper = require("./test-helper");
+        h = require("./test-helper");
         util = require("../lib/util");
         _ = require("lodash");
         referee = require("referee");
@@ -21,9 +21,104 @@
 
     var format = util.format;
     var formatArgs = util.formatArgs;
-    var makeTests = testHelper.makeTests;
+
+    // stuff under test
+    var raw = h.rawCustomAssertions;
+    var makeTests = h.makeTests;
 
     buster.testCase("test-helper", {
+
+        "/ custom assertion( def)s": {
+
+            "/ raw isPlainObjectOrFunc.assert": {
+
+                setUp: function () {
+                    this.assertionFn = raw.isPlainObjectOrFunc.assert;
+                },
+
+                "returns true for": {
+                    "function": function () {
+                        assert.isTrue(this.assertionFn(function () {}));
+                    },
+                    "object": function () {
+                        /*???jslint???*/
+                        assert.isTrue(this.assertionFn({}), "object literal");
+                        assert.isTrue(this.assertionFn(new Object()), "`new Object()`");
+                        assert.isTrue(this.assertionFn({0: 42, length: 1}), "array-like");
+                        assert.isTrue(this.assertionFn(buster), "the buster");
+                    },
+                },
+
+                "returns false for": {
+                    "null, undefined and NaN": function () {
+                        assert.isFalse(this.assertionFn(null), "null");
+                        assert.isFalse(this.assertionFn(undefined), "undefined");
+                        assert.isFalse(this.assertionFn(void 0), "void 0");
+                        assert.isFalse(this.assertionFn(NaN), "NaN");
+                    },
+                    "boolean": function () {
+                        assert.isFalse(this.assertionFn(true), "true");
+                        assert.isFalse(this.assertionFn(false), "false");
+                    },
+                    "number": function () {
+                        assert.isFalse(this.assertionFn(0));
+                        assert.isFalse(this.assertionFn(1));
+                        assert.isFalse(this.assertionFn(-7));
+                        assert.isFalse(this.assertionFn(3.14159265));
+                    },
+                    "string": function () {
+                        assert.isFalse(this.assertionFn(""), "empty string literal");
+                        assert.isFalse(this.assertionFn('foo'), "string literal 'foo'");
+                        assert.isFalse(this.assertionFn(new String()), "`new String()`");
+                    },
+                    "regexp": function () {
+                        assert.isFalse(this.assertionFn(new RegExp('a*')), "new RegExp('a*')");
+                        assert.isFalse(this.assertionFn(/a*/), "regexp literal");
+                    },
+                    "arrays": function () {
+                        /*???jslint???*/
+                        assert.isFalse(this.assertionFn([]), "empty array literal");
+                        assert.isFalse(this.assertionFn([1, 2, "3"]), "mixed array literal");
+                        assert.isFalse(this.assertionFn(new Array()), "`new Array()`");
+                    },
+                    "implicit `arguments`": function () {
+                        assert.isFalse(this.assertionFn(arguments));
+                    }
+                },
+
+                "// / test failure messages": {
+                    "": function () { // TODO: need this empty fn to get a "Deferred" listed (?)
+                    }
+                }
+
+            },
+
+            "/ raw isProperSubset.assert": {
+
+                setUp: function () {
+                    this.assertionFn = raw.isProperSubset.assert;
+                },
+
+                "// returns true for": {
+                    "": function () {
+                        assert.isFalse(this.assertionFn(    ));
+                    },
+                },
+
+                "// returns false for": {
+                    "": function () {
+                        assert.isFalse(this.assertionFn(    ));
+                    },
+                },
+
+
+                "// / test failure messages": {
+                    "": function () { // TODO: need this empty fn to get a "Deferred" listed (?)
+                    }
+                }
+            },
+
+        },
 
         "makeTests": { // TODO: a lot more...
 
@@ -126,4 +221,4 @@
         }
     });
 
-}(this.testHelper, this.util, this.buster, this.referee, this.lodash));
+}(this.h, this.util, this.buster, this.referee, this.lodash));
