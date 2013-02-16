@@ -105,9 +105,17 @@
                     },
                 },
 
-                "// returns false for": {
-                    "": function () {
-                        assert.isFalse(this.assertionFn(    ));
+                "returns false for": {
+                    "equal sets": function () {
+                        assert.isFalse(this.assertionFn([], []), "2 empty");
+                        assert.isFalse(this.assertionFn([1], [1]), "equal singletons");
+                        assert.isFalse(this.assertionFn([1, 2], [2, 1]),
+                            "only different order");
+                        assert.isFalse(this.assertionFn([1, 2, 2], [2, 1]),
+                            "with dupes in subset");
+                        assert.isFalse(this.assertionFn([1, 2], [2, 1, 2]),
+                            "with dupes in superset");
+                        assert.isFalse(this.assertionFn([{}], [{}]), "`[{}], [{}]`");
                     },
                 },
 
