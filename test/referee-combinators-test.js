@@ -62,6 +62,9 @@
 
     buster.testCase("combinator ('partial') assertions", {
 
+        '//- TODO: all tests should also pass with `referee.throwOnFailure = false`': function () {
+        },
+
         'derived from custom': {
             //setUp: addCustomAssertions, // not working - why ?
 
@@ -73,14 +76,6 @@
         },
 
         'derived from built-in unary': {
-            'isTrue unapplied defines .displayName': function () {
-                assert.defined(combinators.assert.isTrue.displayName, "assert.isTrue.displayName");
-                assert.defined(combinators.refute.isTrue.displayName, "refute.isTrue.displayName");
-            },
-            'isTrue applied once defines .displayName': function () {
-                assert.defined(combinators.assert.isTrue().displayName, "assert.isTrue().displayName");
-                assert.defined(combinators.refute.isTrue().displayName, "refute.isTrue().displayName");
-            },
             'isTrue': makeTests('isTrue', [], function (pass, fail) {
                 pass(true);
                 fail(false);
@@ -106,7 +101,7 @@
             })
         },
 
-        'extension - ': {
+        'extension -': {
             'attr 1 level': makeTests('attr', ['key', ca.equals('value')],
                 function (pass, fail) {
                     pass({key: 'value'});   // "pass for equal attribute" : 
