@@ -1,4 +1,3 @@
-/*jslint maxlen:100 */
 var testHelper = (function (referee, util, buster, _) {
     if (typeof require === "function" && typeof module === "object") {
         _ = require("lodash");
@@ -9,7 +8,8 @@ var testHelper = (function (referee, util, buster, _) {
         //buster = require("buster-node");
         //var B = require("buster");
         //buster.format = { ascii: B.format.ascii.bind(B) };
-        // remove the above and uncomment the following once workaround is obsolete:
+        // remove the above and uncomment the following,
+        // once workaround is obsolete:
         buster = require("buster");
     }
 
@@ -25,8 +25,10 @@ var testHelper = (function (referee, util, buster, _) {
         assert: function (actual) {
             return _.isPlainObject(actual) || _.isFunction(actual);
         },
-        assertMessage: "${2}Expected ${0} to be either plain object or function but is ${1}",
-        refuteMessage: "${2}Expected ${0} to be neither plain function nor object but is ${1}",
+        assertMessage: "${2}Expected ${0} to be either plain object or"
+            + " function but is ${1}",
+        refuteMessage: "${2}Expected ${0} to be neither plain function nor"
+            + " object but is ${1}",
         expectation: "toBeObjectOrFunc",
         values: function (thing, message) {
             /*jslint white:true*/ // NO, I do NOT want to indent here!
@@ -44,11 +46,14 @@ var testHelper = (function (referee, util, buster, _) {
             var superMinusSub = _.difference(superset, subset);
             return _.isEmpty(subMinusSuper) && !_.isEmpty(superMinusSub);
         },
-        assertMessage: "${2}Expected\n\n${0}\n\nto be a proper subset of\n\n${1}\n\nBUT ${3}",
-        refuteMessage: "${2}Expected\n\n${0}\n\nNOT to be a proper subset of\n\n${1}\n\nBUT it is!",
+        assertMessage: "${2}Expected\n\n${0}\n\nto be a proper subset of"
+            + "\n\n${1}\n\nBUT ${3}",
+        refuteMessage: "${2}Expected\n\n${0}\n\nNOT to be a proper subset of"
+            + "\n\n${1}\n\nBUT it is!",
         expectation: "toBeProperSubsetOf",
         values: function (subset, superset, message) {
-            // TODO: what a pity that we have to do the work from `assert` again in `values`...
+            // TODO: what a pity that we have to do the work
+            // ...from `assert` again in `values`...
             var reason;
             var subMinusSuper = _.difference(subset, superset);
             var superMinusSub = _.difference(superset, subset);
@@ -69,7 +74,7 @@ var testHelper = (function (referee, util, buster, _) {
                     throw new Error("should not happen");
                     // It does happen - we're being called even
                     // if assert returned true (or refute returned false)
-                    // This means that we're doing even more unnecessary work... :(
+                    // This means we're doing even more unnecessary work... :(
                 */
                 }
             }
@@ -112,7 +117,8 @@ var testHelper = (function (referee, util, buster, _) {
         function makePass(type) {
             var term = terms[type].appliedOnce;
             return function (actual) {
-                var termName = termNames[type].appliedOnce + formatArgs([actual]);
+                var termName = termNames[type].appliedOnce
+                    + formatArgs([actual]);
                 addTest(termName, "pass", function () {
                     buster.refute.exception(function () { term(actual); });
                 });
@@ -124,31 +130,37 @@ var testHelper = (function (referee, util, buster, _) {
         function makeFail(type) {
             var term = terms[type].appliedOnce;
             return function (actual) {
-                var termName = termNames[type].appliedOnce + formatArgs([actual]);
+                var termName = termNames[type].appliedOnce
+                    + formatArgs([actual]);
                 addTest(termName, "fail", function () {
-                    buster.assert.exception(function () { term(actual); }, "AssertionError");
+                    buster.assert.exception(function () { term(actual); },
+                        "AssertionError");
                 });
-                // TODO: add tests for message, be it a custom one or the default
+                // TODO: add tests for message, be it a custom one or default
             };
         }
         function makeDisplayNameTest(type, appType) {
+             // type is either 'assert' or 'refute'
+             // appType is either 'raw' or 'appliedOnce'
             var actual = terms[type][appType].displayName;
             var testFn = (appType === "raw")
                 ? function () {
                     assert.defined(actual, ".displayName");
                     assert.match(actual, new RegExp("^" + type + "\\."),
-                                 "should start with '" + type + ".'"); // 'assert' or 'refute'
+                                 "should start with '" + type + ".'");
                     assert.match(actual, new RegExp("\\." + assertion + "$"),
                                  "should end with name of normal assertion");
                 }
                 : function () { // appType === "appliedOnce"
                     assert.defined(actual, ".displayName");
                     assert.match(actual, new RegExp("^" + type + "\\."),
-                                 "should start with '" + type + ".'"); // 'assert' or 'refute'
+                                 "should start with '" + type + ".'");
                     assert.match(actual, new RegExp("\\." + assertion),
                                  "should contain name of normal assertion");
-                    assert.match(actual, /\)$/, "should end with closing parenthesis");
-                    refute.match(actual, /\n/, "should not span multiple lines");
+                    assert.match(actual, /\)$/,
+                        "should end with closing parenthesis");
+                    refute.match(actual, /\n/,
+                        "should not span multiple lines");
                 };
             addTest(termNames[type][appType] + " [" + appType + "]",
                     "have proper .displayName",
@@ -162,7 +174,7 @@ var testHelper = (function (referee, util, buster, _) {
         makeDisplayNameTest(t, "appliedOnce");
 
         t = "refute";
-        callback(makeFail(t), makePass(t)); // yes, pass and fail swapped for refute!
+        callback(makeFail(t), makePass(t)); // pass & fail swapped for refute!
         makeDisplayNameTest(t, "raw");
         makeDisplayNameTest(t, "appliedOnce");
 
@@ -175,8 +187,8 @@ var testHelper = (function (referee, util, buster, _) {
     buster.assertions.add("isProperSubset", isProperSubset);
     return {
         makeTests: makeTests,
-        rawCustomAssertions: {  // temp: make 'em available so they can be tested
-            isPlainObjectOrFunc: isPlainObjectOrFunc,   // ...on different instance
+        rawCustomAssertions: {  // temp: make available so they can be tested on
+            isPlainObjectOrFunc: isPlainObjectOrFunc,   // ...different instance
             isProperSubset: isProperSubset              // ...of referee...
         }
     };
