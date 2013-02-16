@@ -129,18 +129,10 @@
                     var someValue = {}; // must be very same thing
                     /*
                     return _.cloneDeep(object, function (v) { // not working...!
-                        return _.isFunction(v) ? 23 : v;
+                        return _.isFunction(v) ? someValue : v;
                     });
                     */
-                    // no _.partialRight in lodash !?!
-                    function partialRight(f) {
-                        var rightArgs = _.tail(_.toArray(arguments));
-                        return function () {
-                            var leftArgs = _.toArray(arguments);
-                            return f.apply(this, leftArgs.concat(rightArgs));
-                        };
-                    }
-                    var walk = partialRight(_.reduce, _.result); // _.result(o,k) === o[k]
+                    var walk = _.partialRight(_.reduce, _.result); // _.result(o,k) === o[k]
 
                     var result = {};
                     util.forOwnRec(object, function (v, path) {
