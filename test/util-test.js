@@ -261,34 +261,37 @@
 
             "visits each own prop once": {
                 "- at least top-level ones in plain object (all kinds of values)": function () {
-                    var o = {
-                        a: NaN,
-                        b: undefined,
-                        c: null,
-                        d: false,
-                        e: true,
-                        f: function (a, b) { return a + b; },
-                        g: function g(a, b) { return a + b; },
-                        h: new Function("a", "b", "return a + b"),
-                        i: "",
-                        j: "string literal",
-                        k: new String('new String(..)'),
-                        l: {},
-                        m: new Object(),
-                        n: {foo: "bar", baz: {x: 42}, qumbl: {x: 23}},
-                        o: {0: "0", 1: 1, 2: {0: 0, 1: null}, 3: undefined}, // array-like
-                        p: [],
-                        q: [0, 1, 2],
-                        r: new Array(),
-                        s: new Array(5), // length
-                        t: new Array(1, 2, 3), // 3 elems
-                        u: /^a regular express*ion$/,
-                        v: new RegExp("^another regular express*ion$"),
-                        w: 15,
-                        x: new Number(15),
-                        y: 3.1415927,
-                        z: 0
-                    };
+                    var o = (function () {
+                        /*jslint evil:true*/
+                        return {
+                            a: NaN,
+                            b: undefined,
+                            c: null,
+                            d: false,
+                            e: true,
+                            f: function (a, b) { return a + b; },
+                            g: function g(a, b) { return a + b; },
+                            h: new Function("a", "b", "return a + b"),
+                            i: "",
+                            j: "string literal",
+                            k: new String('new String(..)'),
+                            l: {},
+                            m: new Object(),
+                            n: {foo: "bar", baz: {x: 42}, qumbl: {x: 23}},
+                            o: {0: "0", 1: 1, 2: {0: 0, 1: null}, 3: undefined}, // array-like
+                            p: [],
+                            q: [0, 1, 2],
+                            r: new Array(),
+                            s: new Array(5), // length
+                            t: new Array(1, 2, 3), // 3 elems
+                            u: /^a regular express*ion$/,
+                            v: new RegExp("^another regular express*ion$"),
+                            w: 15,
+                            x: new Number(15),
+                            y: 3.1415927,
+                            z: 0
+                        };
+                    }());
                     ["f", "g", "h"].forEach(function (k) {
                         var fn = o[k];
                         fn.name = "o." + k + ".name: "
