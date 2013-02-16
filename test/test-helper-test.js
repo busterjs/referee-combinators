@@ -79,6 +79,83 @@
                             }
                         });
                     }
+            },
+
+            "creates tests for each invocation of callbacks 'pass' and 'fail'": function () {
+                // In order to be able to use assert.match we need to reset any function
+                // attributes to some single value because the functions need not be same
+                // It's actually the keys that matter.
+                function allFuncsSame(object) {
+                    var someValue = {}; // must be very same thing
+                    /*
+                    return _.cloneDeep(object, function (v) { // not working...!
+                        return _.isFunction(v) ? 23 : v;
+                    });
+                    */
+                    // no _.partialRight in lodash !?!
+                    function partialRight(f) {
+                        var rightArgs = _.tail(_.toArray(arguments));
+                        return function () {
+                            var leftArgs = _.toArray(arguments);
+                            return f.apply(this, leftArgs.concat(rightArgs));
+                        };
+                    }
+                    var walk = partialRight(_.reduce, _.result); // _.result(o,k) === o[k]
+
+                    var result = {};
+                    util.forOwnRec(object, function (v, path) {
+                        var newKey = path.pop();
+                        path[0] = result;
+                        walk(path)[newKey] = someValue;
+                    });
+                    return result;
+                }
+                // short-hand
+                function prepare(f) {
+                    var t = makeTests('isTrue', [], f);
+                    //return allFuncsSame(t);
+                    var result = [];
+                    util.forOwnRec(t, function (v, path) {
+                        path.shift();
+                        var pStr = "[" + _(path).map(format).join("][") + "]";
+                        result.push(pStr);
+                    });
+                    return result;
+                }
+                var noneCalled = prepare(function (pass, fail) {});
+                var passCalled = prepare(function (pass, fail) {
+                    pass(false); // TODO: argument should matter here - but it does
+                });
+                var failCalled = prepare(function (pass, fail) {
+                    fail(true); // TODO: argument should matter here - but it does
+                });
+                var bothCalled = prepare(function (pass, fail) {
+                    pass(false); // TODO: argument should matter here - but it does
+                    fail(true); // TODO: argument should matter here - but it does
+                });
+
+                // TODO: there's something seriously wrong with buster's match!!
+                var a = {}, b = {}, c = {}, d = {};
+                assert.match({a: a, c: c, d: d}, {a: a, b: b}); // passes
+                assert.match({a: a, b: b}, {a: a, c: c, d: d}); // passes, too!
+
+                assert.equals(_.difference(noneCalled, passCalled), [],
+                    "noneCalled's keys should be all in passCalled's");
+                refute.equals(_.difference(passCalled, noneCalled), [],
+                    "passCalled's keys should be more than noneCalled's");
+
+                /*
+                assert.match(noneCalled, passCalled,
+                    "noneCalled's keys should be subset of passCalled's");
+                assert.match(noneCalled, failCalled,
+                    "noneCalled's keys should be subset of passCalled's");
+                assert.match(noneCalled, bothCalled,
+                    "noneCalled's keys should be subset of bothCalled's");
+                assert.match(passCalled, bothCalled,
+                    "passCalled's keys should be subset of bothCalled's");
+                refute.match(failCalled, bothCalled,
+                    "failCalled's keys should be subset of bothCalled's");
+                */
             }
         }
     });
