@@ -22,13 +22,13 @@
     var formatArgs = util.formatArgs;
     var makeTests = testHelper.makeTests;
 
-    buster.assertions.add('isFunctionOrObject', {
+    buster.assertions.add('isObjectOrFunc', {
         assert: function (actual) {
-            return _.isFunction(actual) || _.isObject(actual);
+            return _.isObject(actual) || _.isFunction(actual);
         },
-        assertMessage: "${2}Expected ${1}${0} to be either function or object",
+        assertMessage: "${2}Expected ${1}${0} to be either object or function",
         refuteMessage: "${2}Expected ${1}${0} to be neither function nor object",
-        expectation: "toBeFunctionOrObject",
+        expectation: "toBeObjectOrFunc",
         values: function (thing, path, message) {
             return [thing, path ? path + ": " : "", message ? message + " " : ""];
         }
@@ -59,8 +59,8 @@
                     //actual.whuteva = { f: function () {}, two: { three : 3} };
 
                     assert.isObject(actual);
-                    util.forOwnRecursive(actual, function (v, path) {
-                        assert.isFunctionOrObject(v,
+                    util.forOwnRec(actual, function (v, path) {
+                        assert.isObjectOrFunc(v,
                             "makeTests(...)[" + _.tail(path).join("][") + "]");
                     });
                 }

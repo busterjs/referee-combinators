@@ -18,7 +18,7 @@
 
     var format = util.format;
     var formatArgs = util.formatArgs;
-    var forOwnRecursive = util.forOwnRecursive;
+    var forOwnRec = util.forOwnRec;
 
     buster.testCase("util", {
         "format": {
@@ -213,7 +213,7 @@
             }
         },
 
-        "forOwnRecursive": {
+        "forOwnRec": {
             setUp: function () {
                 var self = this;
                 self.makeCb = function (maxPathLen) {
@@ -230,7 +230,7 @@
             "does not call callback for empty object": function () {
                 var o = {};
                 var spy = this.spy();
-                forOwnRecursive(o, spy);
+                forOwnRec(o, spy);
 
                 refute.called(spy);
             },
@@ -249,7 +249,7 @@
                 assert.equals(fido.poop(), "poop"); // him
                 var spy = this.makeCb();
 
-                forOwnRecursive(fido, spy);
+                forOwnRec(fido, spy);
                 assert.calledWith(spy, "Fido", [fido, "name"]);
                 assert.calledWith(spy, fido.poop, [fido, "poop"]);
                 refute.calledWith(spy, fido.bark, [fido, "bark"]); // NOT this one!
@@ -298,7 +298,7 @@
                             + " - and be used as name by `format`";
                     });
                     var spy = this.makeCb();
-                    forOwnRecursive(o, spy);
+                    forOwnRec(o, spy);
                     // assert(false); // uncomment to see log
 
                     // NaN is special, we cannot just assert.calledWith(spy, o.a, [o, "a"])
@@ -341,7 +341,7 @@
                     assert.equals(f.fooz, "will appear", "f.fooz");
                     assert.equals(_.keys(f), ["fooz"], "_.keys(f)");
                     var spy = this.makeCb();
-                    forOwnRecursive(f, spy);
+                    forOwnRec(f, spy);
 
                     assert.calledWith(spy, f.fooz, [f, "fooz"]);
                     refute.calledWith(spy, f.name, [f, "name"]); // NOT this one!
@@ -354,7 +354,7 @@
                 "in tree-like object": function () {
                     var o = {a: {b: 2, c: {d: 4}}};
                     var spy = this.makeCb();
-                    forOwnRecursive(o, spy);
+                    forOwnRec(o, spy);
 
                     assert.calledWith(spy, o.a,     [o, "a"]);
                     assert.calledWith(spy, o.a.b,   [o, "a", "b"]);
@@ -371,7 +371,7 @@
                     var x = {c: { d: 4} };
                     var o = {a: x, b: x};
                     var spy = this.makeCb();
-                    forOwnRecursive(o, spy);
+                    forOwnRec(o, spy);
 
                     assert.calledWith(spy, x, [o, "a"]); // we see the *value* x twice (OK)
                     assert.calledWith(spy, x, [o, "b"]); // as value of different keys of o
@@ -403,7 +403,7 @@
                     var o = {a: {b: null}};
                     o.a.b = o;
                     var spy = this.makeCb(6); // actually already at 4 but let's go a bit into it
-                    forOwnRecursive(o, spy);
+                    forOwnRec(o, spy);
 
                     assert.calledWith(spy, o.a, [o, "a"]);
                     assert.calledWith(spy, o,   [o, "a", "b"]);
@@ -423,7 +423,7 @@
                     assert.same(iso1.bot, iso2.bot); // shallow!
                     var o = { i1: iso1, i2: iso2 };
                     var spy = this.makeCb();
-                    forOwnRecursive(o, spy);
+                    forOwnRec(o, spy);
 
                     assert.calledWith(spy, iso1, [o, "i1"]);
                     assert.calledWith(spy, iso2, [o, "i2"]);
