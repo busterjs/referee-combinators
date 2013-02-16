@@ -22,15 +22,20 @@
     var formatArgs = util.formatArgs;
     var makeTests = testHelper.makeTests;
 
-    buster.assertions.add('isObjectOrFunc', {
+    buster.assertions.add('isPlainObjectOrFunc', {
         assert: function (actual) {
-            return _.isObject(actual) || _.isFunction(actual);
+            return _.isPlainObject(actual) || _.isFunction(actual);
         },
-        assertMessage: "${2}Expected ${1}${0} to be either object or function",
-        refuteMessage: "${2}Expected ${1}${0} to be neither function nor object",
+        assertMessage: "${2}Expected ${0} to be either plain object or function but is ${1}",
+        refuteMessage: "${2}Expected ${0} to be neither plain function nor object but is ${1}",
         expectation: "toBeObjectOrFunc",
-        values: function (thing, path, message) {
-            return [thing, path ? path + ": " : "", message ? message + " " : ""];
+        values: function (thing, message) {
+            /*jslint white:true*/
+            var type = _.isArray(thing) ? "array" :
+                       _.isRegExp(thing) ? "regexp" :
+                       _.isNull(thing) ? "null" :
+                       typeof thing;
+            return [thing, type, message ? message + ": " : ""];
         }
     });
 
@@ -47,23 +52,28 @@
                 assert.isFunction(cb.args[0][1], "2nd arg to callback on 1st call");
             },
 
-            "returns object with" : {
-                "some properties": function () {
+            "returns" : {
+                "non-empty plain object": function () {
                     var actual = makeTests('isTrue', [], function () {});
-                    assert.isObject(actual);
+                    assert.isPlainObjectOrFunc(actual);
+                    refute.isFunction(actual);
                     assert.greater(_.keys(actual).length, 0, "# of props");
                 },
 
-                "own props either functions or objects of which the same is true": function () {
-                    var actual = makeTests('isTrue', [], function (pass, fail) {});
-                    //actual.whuteva = { f: function () {}, two: { three : 3} };
+                "plain object with own props either functions or plain objects with...":
+                    function () {
+                        var actual = makeTests('isTrue', [], function (pass, fail) {});
+                        //actual.whuteva = { f: function () {}, two: { three : []} };
 
-                    assert.isObject(actual);
-                    util.forOwnRec(actual, function (v, path) {
-                        assert.isObjectOrFunc(v,
-                            "makeTests(...)[" + _.tail(path).join("][") + "]");
-                    });
-                }
+                        assert.isPlainObjectOrFunc(actual);
+
+                        refute.isFunction(actual);
+                        util.forOwnRec(actual, function (v, path) {
+                            var pathStr = "@ ["
+                                + _(path).tail().map(format).join("][") + "]";
+                            assert.isPlainObjectOrFunc(v, pathStr);
+                        });
+                    }
             }
         }
     });
