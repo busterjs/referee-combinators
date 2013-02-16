@@ -56,22 +56,27 @@
                 "non-empty plain object": function () {
                     var actual = makeTests('isTrue', [], function () {});
                     assert.isPlainObjectOrFunc(actual);
-                    refute.isFunction(actual);
-                    assert.greater(_.keys(actual).length, 0, "# of props");
+                    refute.isFunction(actual, format(actual));
+
+                    refute(_.isEmpty(actual), format(actual) + " should be non-empty");
                 },
 
                 "plain object with own props either functions or plain objects with...":
                     function () {
                         var actual = makeTests('isTrue', [], function (pass, fail) {});
-                        //actual.whuteva = { f: function () {}, two: { three : []} };
+                        //actual.whuteva = { f: function () {}, two: { three : {}, 4: []} };
 
                         assert.isPlainObjectOrFunc(actual);
+                        refute.isFunction(actual, format(actual));
 
-                        refute.isFunction(actual);
                         util.forOwnRec(actual, function (v, path) {
-                            var pathStr = "@ ["
+                            var pathStr = "at ["
                                 + _(path).tail().map(format).join("][") + "]";
                             assert.isPlainObjectOrFunc(v, pathStr);
+                            if (!_.isFunction(v)) {
+                                refute(_.isEmpty(v), "object " + pathStr
+                                    + " should be non-empty");
+                            }
                         });
                     }
             }
