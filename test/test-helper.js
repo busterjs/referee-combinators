@@ -38,7 +38,7 @@ var testHelper = (function (referee, util, buster, _) {
         }
     };
 
-    var isProperSubsetOf = {
+    var isProperSubset = {
         assert: function (subset, superset) {
             var subMinusSuper = _.difference(subset, superset);
             var superMinusSub = _.difference(superset, subset);
@@ -172,12 +172,12 @@ var testHelper = (function (referee, util, buster, _) {
 /* what's exposed ---------------------------------------------------------- */
 
     buster.assertions.add("isPlainObjectOrFunc", isPlainObjectOrFunc);
-    buster.assertions.add("isProperSubsetOf", isProperSubsetOf);
+    buster.assertions.add("isProperSubset", isProperSubset);
     return {
         makeTests: makeTests,
         rawCustomAssertions: {  // temp: make 'em available so they can be tested
             isPlainObjectOrFunc: isPlainObjectOrFunc,   // ...on different instance
-            isProperSubsetOf: isProperSubsetOf          // ...of referee...
+            isProperSubset: isProperSubset              // ...of referee...
         }
     };
 
