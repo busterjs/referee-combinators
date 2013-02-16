@@ -17,6 +17,7 @@
 
     var assert = buster.assert;
     var refute = buster.refute;
+    var expect = buster.assertions.expect;
 
     var format = util.format;
     var formatArgs = util.formatArgs;
@@ -36,6 +37,45 @@
                        _.isNull(thing) ? "null" :
                        typeof thing;
             return [thing, type, message ? message + ": " : ""];
+        }
+    });
+
+    buster.assertions.add('isProperSubsetOf', {
+        assert: function (subset, superset) {
+            var subMinusSuper = _.difference(subset, superset);
+            var superMinusSub = _.difference(superset, subset);
+            return _.isEmpty(subMinusSuper) && !_.isEmpty(superMinusSub);
+        },
+        assertMessage: "${2}Expected\n\n${0}\n\nto be a proper subset of\n\n${1}\n\nBUT ${3}",
+        refuteMessage: "${2}Expected\n\n${0}\n\nNOT to be a proper subset of\n\n${1}\n\nBUT it is!",
+        expectation: "toBeProperSubsetOf",
+        values: function (subset, superset, message) {
+            // TODO: what a pity that we have to do the work from `assert` again in `values`...
+            var reason;
+            var subMinusSuper = _.difference(subset, superset);
+            var superMinusSub = _.difference(superset, subset);
+            if (!_.isEmpty(subMinusSuper)) {
+                if (_.isEmpty(superMinusSub)) {
+                    reason = "it is just the other way round."
+                        + " These are in the former but not in the latter: "
+                        + format(subMinusSuper);
+                } else {
+                    reason = "some in the former are missing in the latter: "
+                        + format(subMinusSuper);
+                }
+            } else { // subMinusSuper IS empty
+                if (_.isEmpty(superMinusSub)) {
+                    reason = "they are equal (as sets)";
+                /*
+                } else {
+                    throw new Error("should not happen");
+                    // It does happen - we're being called even
+                    // if assert returned true (or refute returned false)
+                    // This means that we're doing even more unnecessary work... :(
+                */
+                }
+            }
+            return [subset, superset, message ? message + ": " : "", reason];
         }
     });
 
@@ -81,7 +121,7 @@
                     }
             },
 
-            "creates tests for each invocation of callbacks 'pass' and 'fail'": function () {
+            "creates more tests when 'pass' and/or 'fail' are called": function () {
                 // In order to be able to use assert.match we need to reset any function
                 // attributes to some single value because the functions need not be same
                 // It's actually the keys that matter.
@@ -124,38 +164,28 @@
                 }
                 var noneCalled = prepare(function (pass, fail) {});
                 var passCalled = prepare(function (pass, fail) {
-                    pass(false); // TODO: argument should matter here - but it does
+                    pass(false); // argument doesn't matter here (only same as in bothCalled)
                 });
                 var failCalled = prepare(function (pass, fail) {
-                    fail(true); // TODO: argument should matter here - but it does
+                    fail(true); // argument doesn't matter here (only same as in bothCalled)
                 });
                 var bothCalled = prepare(function (pass, fail) {
-                    pass(false); // TODO: argument should matter here - but it does
-                    fail(true); // TODO: argument should matter here - but it does
+                    pass(false); // arguments don't matter here (but see above)
+                    fail(true);
                 });
+
+                // let's use the 'expect' syntax, to avoid any confusion
+                // about which is supposed to be the proper subset and which the superset
+                expect(noneCalled).toBeProperSubsetOf(passCalled, "noneCalled \\ passCalled");
+                expect(noneCalled).toBeProperSubsetOf(failCalled, "noneCalled \\ failCalled");
+                expect(noneCalled).toBeProperSubsetOf(bothCalled, "noneCalled \\ bothCalled");
+                expect(passCalled).toBeProperSubsetOf(bothCalled, "passCalled \\ bothCalled");
+                expect(failCalled).toBeProperSubsetOf(bothCalled, "failCalled \\ bothCalled");
 
                 // TODO: there's something seriously wrong with buster's match!!
                 var a = {}, b = {}, c = {}, d = {};
                 assert.match({a: a, c: c, d: d}, {a: a, b: b}); // passes
                 assert.match({a: a, b: b}, {a: a, c: c, d: d}); // passes, too!
-
-                assert.equals(_.difference(noneCalled, passCalled), [],
-                    "noneCalled's keys should be all in passCalled's");
-                refute.equals(_.difference(passCalled, noneCalled), [],
-                    "passCalled's keys should be more than noneCalled's");
-
-                /*
-                assert.match(noneCalled, passCalled,
-                    "noneCalled's keys should be subset of passCalled's");
-                assert.match(noneCalled, failCalled,
-                    "noneCalled's keys should be subset of passCalled's");
-                assert.match(noneCalled, bothCalled,
-                    "noneCalled's keys should be subset of bothCalled's");
-                assert.match(passCalled, bothCalled,
-                    "passCalled's keys should be subset of bothCalled's");
-                refute.match(failCalled, bothCalled,
-                    "failCalled's keys should be subset of bothCalled's");
-                */
             }
         }
     });
