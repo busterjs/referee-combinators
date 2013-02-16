@@ -174,12 +174,12 @@
                 }
             },
 
-            "with empty array": function () {
+            "works with empty array": function () {
                 var x = [];
                 var a = formatArgs(x);
                 assert.equals(a, "()", "should return empty parens");
             },
-            "with array containing empty array": function () {
+            "works with array containing empty array": function () {
                 var x = [[]];
                 var e = new RegExp("^\\("
                                     + format(x[0]).replace("[", "\\[").replace("]", "\\]")
@@ -188,7 +188,7 @@
 
                 assert.match(a, e, "should return formatted elem with parens around");
             },
-            "with array containing mixed elems": function () {
+            "works with array containing mixed elems": function () {
                 var arr = [-0.0, "one", [[[]], []]];
                 var act = formatArgs(arr);
                 var exp = new RegExp("^\\(" + _.map(arr, format).join(" *, *")
@@ -199,7 +199,7 @@
                 assert.match(act, /^\(.*\)$/, "should put parens around");
                 assert.match(act, exp, "should format elems in order, separated by commas");
             },
-            "//with the implicit 'arguments'": function () {
+            "//works with the implicit 'arguments'": function () {
                 var exercise = function () { return formatArgs(arguments); };
                 var arr = ["qumbl", null, 42, undefined, { foo: "bar" }];
                 var act = exercise.apply(null, arr);
