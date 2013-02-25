@@ -38,10 +38,24 @@
         },
         "combinators have raw assertions": function() {
             assert.defined(combinators.assert.defined.raw);
+        },
+        "combinators raw assertions can pass": function() {
+            return combinators.assert.defined.raw()("defined").then(
+                    function(res){
+                        buster.assert.defined(res);
+                    });
+        },
+        "combinators raw assertions can fail": function() {
+            return combinators.assert.defined.raw()(undefined).then(
+                function(res){
+                    buster.fail("should not be resolved");
+                },
+                function(res)  {
+                    buster.assert.defined(res);
+                }
+            );
         }
     });
-
-
 
     buster.testCase("check normal assertions", {
         "built-in": {
