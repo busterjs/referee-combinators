@@ -142,6 +142,7 @@ var testHelper = (function (referee, util, buster, _) {
         function makeDisplayNameTest(type, appType) {
              // type is either 'assert' or 'refute'
              // appType is either 'raw' or 'appliedOnce'
+
             var actual = terms[type][appType].displayName;
             var testFn = (appType === "raw")
                 ? function () {

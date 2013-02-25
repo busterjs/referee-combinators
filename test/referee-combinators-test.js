@@ -29,6 +29,20 @@
         });
     }
 
+    buster.testCase("combinator basics", {
+        "referee has combinators" : function() {
+            assert.defined(combinators);
+        },
+        "combinators have assertions": function() {
+            assert.defined(combinators.assert.defined);
+        },
+        "combinators have raw assertions": function() {
+            assert.defined(combinators.assert.defined.raw);
+        }
+    });
+
+
+
     buster.testCase("check normal assertions", {
         "built-in": {
             "isTrue": function () {
@@ -144,6 +158,7 @@
                     })
             }
         }
+
     });
 
 }(this.referee, this.buster, this._, this.testHelper));
