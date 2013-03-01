@@ -30,31 +30,32 @@
     }
 
     buster.testCase("combinator basics", {
-        "referee has combinators" : function() {
+        "referee has combinators" : function () {
             assert.defined(combinators);
         },
-        "combinators have assertions": function() {
+        "combinators have assertions": function () {
             assert.defined(combinators.assert.defined);
         },
-        "combinators have raw assertions": function() {
+        "combinators have raw assertions": function () {
             assert.defined(combinators.assert.defined.raw);
         },
-        "armed combinators have raw": function() {
+        "armed combinators have raw": function () {
             assert.defined(combinators.assert.defined("raw").raw);
         },
 
-        "combinators raw assertions can pass": function() {
+        "combinators raw assertions can pass": function () {
             return combinators.assert.defined.raw()("defined").then(
-                    function(res){
-                        buster.assert.defined(res);
-                    });
+                function (res) {
+                    buster.assert.defined(res);
+                }
+            );
         },
-        "combinators raw assertions can fail": function() {
+        "combinators raw assertions can fail": function () {
             return combinators.assert.defined.raw()(undefined).then(
-                function(res){
+                function (res) {
                     buster.fail("should not be resolved");
                 },
-                function(res)  {
+                function (res) {
                     buster.assert.defined(res);
                 }
             );
@@ -93,21 +94,22 @@
     addCustomAssertions();
 
     function message(assertion, actual, messageAssertion) {
-        return function() {
+        return function () {
             return assertion.raw(actual).then(
                 buster.fail,
-                function(message) {
+                function (message) {
                     var result = messageAssertion.raw(message);
                     return result.then(
-                        function(res) {
-                            return buster.assert.defined(res);  
+                        function (res) {
+                            return buster.assert.defined(res);
                         },
-                        function(res)  {
+                        function (res) {
                             buster.refute.defined(res, "wrong message: ");
                         }
                     );
-                });
-        }
+                }
+            );
+        };
     }
 
 
@@ -170,7 +172,8 @@
                 'contains failing attribute': message(
                     ca.attr('key', ca.equals('value')),
                     'other value',
-                    ca.contains('key'))
+                    ca.contains('key')
+                )
             },
 
             /*
