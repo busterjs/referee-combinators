@@ -171,8 +171,28 @@
             'attr message': {
                 'contains failing attribute': message(
                     ca.attr('key', ca.equals('value')),
-                    'other value',
+                    {'key': 'other value'},
                     ca.contains('key')
+                ),
+                'contains failing actual': message(
+                    ca.attr('key', ca.equals('value')),
+                    {'key': 'other value'},
+                    ca.contains('other value')
+                ),
+                'contains failing expected': message(
+                    ca.attr('key', ca.equals('value')),
+                    {'key': 'other value'},
+                    ca.contains('value')
+                ),
+                'contains assert for assertions': message(
+                    ca.attr('key', ca.equals('value')),
+                    {'key': 'other value'},
+                    ca.contains('assert')
+                ),
+                'contains assertion': message(
+                    ca.attr('key', ca.equals('value')),
+                    {'key': 'other value'},
+                    ca.contains('equals')
                 )
             },
 
