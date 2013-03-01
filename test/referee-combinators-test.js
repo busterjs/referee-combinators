@@ -1,5 +1,5 @@
 /*jslint maxlen:100 */
-(function (referee, buster, _, testHelper) {
+(function (referee, buster, _, when, testHelper) {
     if (typeof require === "function" && typeof module === "object") {
         referee = require("../lib/referee-combinators");
         _ = require("lodash");
@@ -39,6 +39,10 @@
         "combinators have raw assertions": function() {
             assert.defined(combinators.assert.defined.raw);
         },
+        "armed combinators have raw": function() {
+            assert.defined(combinators.assert.defined("raw").raw);
+        },
+
         "combinators raw assertions can pass": function() {
             return combinators.assert.defined.raw()("defined").then(
                     function(res){
@@ -88,6 +92,25 @@
     // if it's done in setUp the custom assertion is not found - why?
     addCustomAssertions();
 
+    function message(assertion, actual, messageAssertion) {
+        return function() {
+            return assertion.raw(actual).then(
+                buster.fail,
+                function(message) {
+                    var result = messageAssertion.raw(message);
+                    return result.then(
+                        function(res) {
+                            return buster.assert.defined(res);  
+                        },
+                        function(res)  {
+                            buster.refute.defined(res, "wrong message: ");
+                        }
+                    );
+                });
+        }
+    }
+
+
     buster.testCase("combinator ('partial') assertions", {
 
         '//- TODO: all tests should also pass with `referee.throwOnFailure = false`': function () {
@@ -95,7 +118,6 @@
 
         'derived from custom': {
             //setUp: addCustomAssertions, // not working - why ?
-
             'binary': makeTests('equalsTwoWithCoercion', [], function (pass, fail) {
                 pass(2);
                 pass("2");
@@ -144,6 +166,12 @@
                     fail({key1: {key0: 'value'}});    // "fail for non-existent path
                     fail({key0: {}});  // "fail for partial path" : 
                 }),
+            'attr message': {
+                'contains failing attribute': message(
+                    ca.attr('key', ca.equals('value')),
+                    'other value',
+                    ca.contains('key'))
+            },
 
             /*
              * Structure assert is merely syntactic sugar for other assert combinators
@@ -175,4 +203,4 @@
 
     });
 
-}(this.referee, this.buster, this._, this.testHelper));
+}(this.referee, this.buster, this._, this.when, this.testHelper));
