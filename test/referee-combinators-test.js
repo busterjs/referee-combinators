@@ -227,11 +227,14 @@
                     ca.structure({'key':'value'}),
                     {'key': 'other value'},
                     ca.contains('key')
+                ),
+                "key on second level in failure message" : message(
+                    ca.structure({'key': {'child': 'value'}}),
+                    {'key': {'child': 'other value'}},
+                    ca.contains('child')
                 )
             }
-            
         }
-
     });
 
 }(this.referee, this.buster, this._, this.when, this.testHelper));
