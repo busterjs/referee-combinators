@@ -104,7 +104,7 @@
                             return buster.assert.defined(res);
                         },
                         function (res) {
-                            buster.refute.defined(res, "wrong message: ");
+                            buster.refute(res);
                         }
                     );
                 }
@@ -221,7 +221,15 @@
                         fail({enabled: undefined}); // "fail for undefined"
                         fail({}); // "fail for missin"
                     })
+            },
+            'structure message':{
+                "key on first level in failure message" : message(
+                    ca.structure({'key':'value'}),
+                    {'key': 'other value'},
+                    ca.contains('key')
+                )
             }
+            
         }
 
     });
