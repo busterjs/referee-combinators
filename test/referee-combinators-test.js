@@ -112,7 +112,6 @@
         };
     }
 
-
     buster.testCase("combinator ('partial') assertions", {
 
         '//- TODO: all tests should also pass with `referee.throwOnFailure = false`': function () {
@@ -154,6 +153,16 @@
         },
 
         'extension -': {
+            'bind' : {
+                ' - two primitive asserts': makeTests('bind', [ca.greater(2), ca.less(5)],
+                function (pass, fail) {
+                    pass(4);   // "pass for equal attribute" : 
+                    fail(1);   // "fail for unequal attribute" : 
+                    fail(5);   // "fail for missing attribute" :
+                })
+            },
+            
+
             'attr 1 level': makeTests('attr', ['key', ca.equals('value')],
                 function (pass, fail) {
                     pass({key: 'value'});   // "pass for equal attribute" : 
