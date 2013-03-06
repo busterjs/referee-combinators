@@ -88,6 +88,7 @@
     });
 
     var ca = combinators.assert;
+    var cr = combinators.refute;
 
     // need to add them here (outside test case),
     // if it's done in setUp the custom assertion is not found - why?
@@ -112,6 +113,65 @@
         };
     }
 
+
+    buster.testCase("bind", {
+        ' - two primitive asserts': makeTests('bind', [ca.greater(2), ca.less(5)],
+                                              function (pass, fail) {
+                                                  pass(4);                    
+                                                  fail(1);
+                                                  fail(5);
+                                              }),
+        ' - one + two primitive asserts': makeTests('bind', [ca.greater(2), 
+                                                             ca.bind(cr.equals(4), 
+                                                                     ca.less(6))],
+                                              function (pass, fail) {
+                                                  pass(3);                    
+                                                  pass(5);                    
+                                                  fail(1);
+                                                  fail(7);
+                                                  fail(4);
+                                              }),
+
+        'messages' : {
+            'first assert fails with expected in message' : message(
+                ca.bind(ca.greater(4), ca.less(8)),
+                2,
+                ca.contains(4)
+            ),
+            'first assert fails with actual in message' : message(
+                ca.bind(ca.greater(4), ca.less(8)),
+                2,
+                ca.contains(2)
+            ),
+            'second expected not in message when first assert fails' : message(
+                ca.bind(ca.greater(4), ca.less(8)),
+                2, 
+                cr.contains(8)
+            ),
+            'second assert fails with expected in message' : message(
+                ca.bind(ca.greater(4), ca.less(8)),
+                9,
+                ca.contains(8)
+            ),
+            'second assert fails with actual in message' : message(
+                ca.bind(ca.greater(4), ca.less(8)),
+                9,
+                ca.contains(9)
+            ),
+            'first expected not in message when second assert fails' : message(
+                ca.bind(ca.greater(4), ca.less(8)),
+                9,
+                cr.contains(4)
+            ),
+            'third expected in message when third fails' : message(
+                ca.bind(ca.greater(2), 
+                        ca.bind(cr.equals(4), 
+                                ca.less(6))),
+                10,
+                ca.contains(6)
+            )
+        }
+    });
 
     buster.testCase("combinator ('partial') assertions", {
 
@@ -154,6 +214,8 @@
         },
 
         'extension -': {
+            
+
             'attr 1 level': makeTests('attr', ['key', ca.equals('value')],
                 function (pass, fail) {
                     pass({key: 'value'});   // "pass for equal attribute" : 
