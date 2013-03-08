@@ -181,7 +181,36 @@
                                                   fail(1);
                                                   fail(4);
                                                   fail(6);
-                                              })
+                                                  fail(8);
+                                              }),
+        ' - three primitive asserts': makeTests('choice', [ca.choice(ca.equals(3), ca.equals(8)), ca.equals(5)],
+                                              function (pass, fail) {
+                                                  pass(3);                    
+                                                  pass(5);
+                                                  pass(8);
+                                                  fail(1);
+                                                  fail(4);
+                                                  fail(6);
+                                              }),
+        'messages' : {
+            'first, second expected  and actual in message on fail' : message(
+                ca.choice(ca.equals(4), ca.equals(8)),
+                2,
+                ca.bind(ca.contains(8), 
+                        ca.bind(ca.contains(4), ca.contains(2)))
+            ),
+            'first, second, third expected and actual in message on fail' : message(
+                ca.choice(ca.choice(ca.equals(4), ca.equals(8)), ca.equals(5)),
+                2,
+                ca.bind(ca.contains(8), 
+                        ca.bind(ca.contains(4), 
+                                ca.bind(ca.contains(5), 
+                                        ca.contains(2))))
+            )
+
+        },
+
+
     })
 
     buster.testCase("combinator ('partial') assertions", {
