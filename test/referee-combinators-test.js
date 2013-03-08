@@ -173,6 +173,17 @@
         }
     });
 
+    buster.testCase("choice", {
+        ' - two primitive asserts': makeTests('choice', [ca.equals(3), ca.equals(5)],
+                                              function (pass, fail) {
+                                                  pass(3);                    
+                                                  pass(5);
+                                                  fail(1);
+                                                  fail(4);
+                                                  fail(6);
+                                              })
+    })
+
     buster.testCase("combinator ('partial') assertions", {
 
         '//- TODO: all tests should also pass with `referee.throwOnFailure = false`': function () {
