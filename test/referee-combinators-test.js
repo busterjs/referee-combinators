@@ -213,12 +213,32 @@
 
     })
 
-    buster.testCase("head", {
+
+    var EOF = cr.equals([]);
+    buster.testCase("repeat", {
+        ' - with next': makeTests('repeat', [ca.next(ca.equals(3)), EOF],
+                                            function (pass, fail) {
+                                                pass([3]);                    
+                                                pass([3, 3, 3]);
+                                                pass([]);//0 or more
+                                                fail([1, 2, 3]);
+                                                fail([3, 2, 1]);
+                                              })
+    })
+
+    buster.testCase("next", {
         ' - checks first element': makeTests('next', [ca.equals(3)],
                                             function (pass, fail) {
                                                 pass([3]);                    
                                                 pass([3, 4, 5]);
                                                 fail([1, 2, 3]);
+                                                fail([2]);
+                                                fail([]);
+                                              }),
+
+        ' - checks passes tail': makeTests('compose', [ca.next(ca.equals(3)), ca.equals([4,5])],
+                                            function (pass, fail) {
+                                                pass([3, 4, 5]);                    
                                                 fail([2]);
                                                 fail([]);
                                               }),
@@ -230,7 +250,6 @@
             )
         }
     })
-
 
     buster.testCase("combinator ('partial') assertions", {
 
