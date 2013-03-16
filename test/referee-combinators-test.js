@@ -114,15 +114,15 @@
     }
 
 
-    buster.testCase("bind", {
-        ' - two primitive asserts': makeTests('bind', [ca.greater(2), ca.less(5)],
+    buster.testCase("compose", {
+        ' - two primitive asserts': makeTests('compose', [ca.greater(2), ca.less(5)],
                                               function (pass, fail) {
                                                   pass(4);                    
                                                   fail(1);
                                                   fail(5);
                                               }),
-        ' - one + two primitive asserts': makeTests('bind', [ca.greater(2), 
-                                                             ca.bind(cr.equals(4), 
+        ' - one + two primitive asserts': makeTests('compose', [ca.greater(2), 
+                                                             ca.compose(cr.equals(4), 
                                                                      ca.less(6))],
                                               function (pass, fail) {
                                                   pass(3);                    
@@ -134,38 +134,38 @@
 
         'messages' : {
             'first assert fails with expected in message' : message(
-                ca.bind(ca.greater(4), ca.less(8)),
+                ca.compose(ca.greater(4), ca.less(8)),
                 2,
                 ca.contains(4)
             ),
             'first assert fails with actual in message' : message(
-                ca.bind(ca.greater(4), ca.less(8)),
+                ca.compose(ca.greater(4), ca.less(8)),
                 2,
                 ca.contains(2)
             ),
             'second expected not in message when first assert fails' : message(
-                ca.bind(ca.greater(4), ca.less(8)),
+                ca.compose(ca.greater(4), ca.less(8)),
                 2, 
                 cr.contains(8)
             ),
             'second assert fails with expected in message' : message(
-                ca.bind(ca.greater(4), ca.less(8)),
+                ca.compose(ca.greater(4), ca.less(8)),
                 9,
                 ca.contains(8)
             ),
             'second assert fails with actual in message' : message(
-                ca.bind(ca.greater(4), ca.less(8)),
+                ca.compose(ca.greater(4), ca.less(8)),
                 9,
                 ca.contains(9)
             ),
             'first expected not in message when second assert fails' : message(
-                ca.bind(ca.greater(4), ca.less(8)),
+                ca.compose(ca.greater(4), ca.less(8)),
                 9,
                 cr.contains(4)
             ),
             'third expected in message when third fails' : message(
-                ca.bind(ca.greater(2), 
-                        ca.bind(cr.equals(4), 
+                ca.compose(ca.greater(2), 
+                        ca.compose(cr.equals(4), 
                                 ca.less(6))),
                 10,
                 ca.contains(6)
@@ -196,15 +196,15 @@
             'first, second expected  and actual in message on fail' : message(
                 ca.choice(ca.equals(4), ca.equals(8)),
                 2,
-                ca.bind(ca.contains(8), 
-                        ca.bind(ca.contains(4), ca.contains(2)))
+                ca.compose(ca.contains(8), 
+                        ca.compose(ca.contains(4), ca.contains(2)))
             ),
             'first, second, third expected and actual in message on fail' : message(
                 ca.choice(ca.choice(ca.equals(4), ca.equals(8)), ca.equals(5)),
                 2,
-                ca.bind(ca.contains(8), 
-                        ca.bind(ca.contains(4), 
-                                ca.bind(ca.contains(5), 
+                ca.compose(ca.contains(8), 
+                        ca.compose(ca.contains(4), 
+                                ca.compose(ca.contains(5), 
                                         ca.contains(2))))
             )
 
@@ -226,7 +226,7 @@
             'expected and head in message on fail' : message(
                 ca.next(ca.equals(4)),
                 [2],
-                ca.bind(ca.contains(4), ca.contains(2))
+                ca.compose(ca.contains(4), ca.contains(2))
             )
         }
     })
