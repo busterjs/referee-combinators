@@ -213,6 +213,25 @@
 
     })
 
+    buster.testCase("head", {
+        ' - checks first element': makeTests('next', [ca.equals(3)],
+                                            function (pass, fail) {
+                                                pass([3]);                    
+                                                pass([3, 4, 5]);
+                                                fail([1, 2, 3]);
+                                                fail([2]);
+                                                fail([]);
+                                              }),
+        'messages' : {
+            'expected and head in message on fail' : message(
+                ca.next(ca.equals(4)),
+                [2],
+                ca.bind(ca.contains(4), ca.contains(2))
+            )
+        }
+    })
+
+
     buster.testCase("combinator ('partial') assertions", {
 
         '//- TODO: all tests should also pass with `referee.throwOnFailure = false`': function () {
